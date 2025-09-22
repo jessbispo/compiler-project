@@ -4,7 +4,7 @@
 **Disciplina:** Compiladores  
 **Fase:** 1 - Análise Léxica e Análise Sintática  
 **Data de Entrega:** 30/09  
-**Integrantes:** [INSERIR NOMES DOS INTEGRANTES AQUI]
+**Integrantes:** Jessica, Vitor
 
 ## Descrição do Projeto
 
