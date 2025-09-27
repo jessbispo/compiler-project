@@ -32,6 +32,33 @@ C -> aC | bC | ε
 
 Podem ser criados com caracteres alfanuméricos e o caractere `_`. Não pode começar com um número, apenas por uma letra ou `_`  e é seguido por zero ou mais letras, dígitos ou `_`.
 
+<details>
+<summary>
+    <code>
+        <b>afn</b>
+    </code>
+</summary>
+
+![image.png](./afn/variables.png)
+
+</details> 
+<br>
+
+**Expressão Regular:**
+
+```nasm
+( a | b | _ )( a | b | _ | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 0 )*
+```
+
+**Gramática Livre de Contexto (GLC):**
+
+```nasm
+S -> C A
+C -> a | b | _
+A -> C | D | ε
+D -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+```
+
 
 # Operadores
 
