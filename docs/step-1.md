@@ -8,9 +8,7 @@ Aparecem delimitados por `/*` e `*/` e tudo que está entre estes identificadore
 
 <details>
 <summary>
-    <code>
-        <b>afn</b>
-    </code>
+    <code><b>afn</b></code>
 </summary>
 
 ![image.png](./afn/comments.png)
