@@ -1,9 +1,7 @@
 # Apresentação
-
 A seguir estão apresentadas a gramática da linguagem **MiniPascal** e as especificações léxicas da linguagem, onde são definidos os seus átomos.
 
 # Comentários
-
 Aparecem delimitados por `/*` e `*/` e tudo que está entre estes identificadores é ignorado pela linguagem.
 
 <details>
@@ -29,7 +27,6 @@ C -> aC | bC | ε
 ```
 
 # Identificadores (Variáveis)
-
 Podem ser criados com caracteres alfanuméricos e o caractere `_`. Não pode começar com um número, apenas por uma letra ou `_`  e é seguido por zero ou mais letras, dígitos ou `_`.
 
 <details>
@@ -59,13 +56,37 @@ A -> C | D | ε
 D -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
 ```
 
-
 # Operadores
-
 Os operadores utilizados pela linguagem são: `+`, `-`, `div`, `*`, `and`, `or`, `not`, `<`, `>`, `<>`, `<=`, `>=`, `:=`.
 
-# Delimitadores
+<details>
+<summary>
+    <code>
+        <b>afn</b>
+    </code>
+</summary>
 
+![image.png](./afn/operators.png)
+
+</details> 
+<br>
+
+**Expressão Regular:**
+
+```nasm
+( + | - | * | div | and | or | not | <> | <= | >= | < | > | := )
+```
+
+**Gramática Livre de Contexto (GLC):**
+
+```nasm
+S -> R | L | O
+R -> + | - | * | div
+L -> and | or | not
+O -> <> | <= | >= | < | > | :=
+```
+
+# Delimitadores
 Os delimitadores utilizados pela linguagem são: `(`, `)`, `,`, `:`, `.`, `;`.
 
 # Palavras Reservadas
