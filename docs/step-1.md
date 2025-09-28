@@ -89,6 +89,31 @@ O -> <> | <= | >= | < | > | :=
 # Delimitadores
 Os delimitadores utilizados pela linguagem são: `(`, `)`, `,`, `:`, `.`, `;`.
 
+<details>
+<summary>
+    <code>
+        <b>afn</b>
+    </code>
+</summary>
+
+![image.png](./afn/delimiters.png)
+
+</details> 
+<br>
+
+**Expressão Regular:**
+
+```nasm
+( ( | ) | , | : | . | ; )
+```
+
+**Gramática Livre de Contexto (GLC):**
+
+```nasm
+S -> ( | ) | , | : | . | ;
+```
+
+
 # Palavras Reservadas
 
 As palavras reservadas pela linguagem são:
