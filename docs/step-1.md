@@ -118,6 +118,35 @@ S -> ( | ) | , | : | . | ;
 
 As palavras reservadas pela linguagem são:
 
-`program` `if` `do` `var` `false` `begin` `then` `and` `integer` `write` `end` `else` `or` `boolean` 
+`program` `if` `do` `var` `false` `begin` `then` `and` `integer` `write` `end` `else` `or` `boolean` `procedure` `while` `not` `true`
 
-`procedure` `while` `not` `true`
+<details>
+<summary>
+    <code>
+        <b>afn</b>
+    </code>
+</summary>
+
+![image.png](./afn/private-keywords.png)
+
+</details> 
+<br>
+
+**Expressão Regular (ER):**
+
+```nasm
+( program | if | do | var | false | begin | then | and | integer | write | end | else | or | boolean | procedure | while | not | true )
+```
+
+**Gramática Livre de Contexto (GLC):**
+
+```nasm
+S -> C | B | A | LO | L | T | O
+C -> if | else | then
+B -> true | false
+A -> begin | end
+LO -> while | do
+L -> and | or | not
+T -> var | integer
+O -> program | write
+```
