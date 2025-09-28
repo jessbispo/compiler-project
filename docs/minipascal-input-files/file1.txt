@@ -1,4 +1,3 @@
-program correto ;
 var a, b, c : integer ;
 var d, e, f : boolean ;
 procedure proc(var a1 : integer ) ;
