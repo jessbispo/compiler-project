@@ -3,6 +3,8 @@
 
 #include "./header/file-reader.h"
 #include "./header/beautiful-print.h"
+#include "./header/automata.h"
+#include "./header/lexical-analysis.h"
 
 int main(int argc, char *argv[]) {
 
@@ -10,6 +12,8 @@ int main(int argc, char *argv[]) {
     char *file_content;
     char *buffer;
     size_t file_size;
+
+    TokensTable *table;
 
     int read_file_result;
 
@@ -19,9 +23,17 @@ int main(int argc, char *argv[]) {
         printf(">> insira o caminho do arquivo: ");
         scanf("%s", filepath);
     } else {
+
+        // TODO: corrigir o Segmentation fault (core dumped)
         filepath = argv[0];
         file_content = argv[1];
-        buffer = (char *)malloc(1024 * sizeof(char));
+        file_size = atoi(argv[2]);
+
+        printf(">> arquivo inserido: %s\n", filepath);
+        printf(">> conteúdo do arquivo: %s\n", file_content);
+        printf(">> tamanho do arquivo: %zu\n", file_size);
+
+        return 0;
     }
 
     read_file_result = read_file(filepath, &file_content, &file_size);
@@ -35,10 +47,13 @@ int main(int argc, char *argv[]) {
     success_message(1);
     show_file_content(filepath, file_content, file_size);
 
+    lexical_analysis_message();
 
-    
-    
+    // Realizar a analise léxica para os comentários, variáveis, operadores, delimitadores e palavras reservadas do MiniPascal
 
+    analyze_file_content(file_content, file_size, table);
+    print_token_table();
     
-
+    free(file_content);
+    return EXIT_SUCCESS;
 }

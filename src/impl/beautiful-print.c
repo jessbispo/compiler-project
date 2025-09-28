@@ -1,22 +1,24 @@
 #include <stdio.h>
 #include "../header/beautiful-print.h"
+#include "../header/lexical-analysis.h"
+#include "../header/automata.h"
 
 void greetings() {
     printf("---\nSEJA BEM VINDO, USUARIO!\n");
 }
 
 void error_message() {
-    printf("---\n[ ERRO ] Um erro foi encontrado!\n");
+    printf("---\nUM ERRO FOI ENCONTRADO!\n");
 }
 
 
 void success_message(int message_status) {
-    printf("---\n[ SUCESSO ] ");
+    printf("---\nOPERAÇÃO BEM SUCEDIDA: ");
 
     switch (message_status)
     {
     case 1:
-        printf("O arquivo foi lido com sucesso!\n");
+        printf("O ARQUIVO FOI LIDO COM SUCESSO!\n");
         break;
     
     default:
@@ -43,5 +45,31 @@ void show_file_content(char *filepath, char *content, size_t size) {
             printf("  ");
         }
     }
+    printf("\n");
 
+}
+
+void lexical_analysis_message() {
+    printf("---\nANÁLISE LÉXICA\n");
+}
+
+void print_token_table(TokensTable *table) {
+    printf("---\nTABELA DE TOKENS\n");
+    
+    if (table == NULL || table->count == 0) {
+        printf("Nenhum token identificado.\n");
+        return;
+    }
+
+    for (int i = 0; i < table->count; i++) {
+        Token *token = table->tokens[i];
+        if (token != NULL) {
+            printf("Token %d: Lexema='%s', Linha=%d, Coluna=%d\n", 
+                   i + 1, 
+                   token->lexeme, 
+                   token->position.line, 
+                   token->position.column);
+        }
+    }
+    
 }
