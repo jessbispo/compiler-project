@@ -3,7 +3,7 @@
  * Projeto de Compiladores - Fase 1
  * Análise Lexica e Sintática
  * 
- * Autores: Jessica Bispo, 10410798 e Vitor Alves, [vitor add seu RA aqui]
+ * Autores: Jessica Bispo, 10410798 e Vitor Alves Pereira, 10410862
  * Data: Setembro 2025
  * 
  * Funcionalidades:
