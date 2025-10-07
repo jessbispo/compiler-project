@@ -1,43 +1,48 @@
-/*
- * COMPILADOR MINIPASCAL - VERSAO COMPLETA
- * Projeto de Compiladores - Fase 1
- * Análise Lexica e Sintática
- * 
- * Autores: Jessica Bispo, 10410798 e Vitor Alves Pereira, 10410862
- * Data: Setembro 2025
- * 
- * Funcionalidades:
- * - Análise Lexica completa com tratamento de erros
- * - Análise Sintática descendente recursiva
- * - Suporte a todas as construções do MiniPascal
- * - Geraçao de arquivo de tokens
- * - Mensagens de erro detalhadas
+/** 
+ * @brief   Compilador: Análise Léxica e Análise Sintática
+ * @details Realiza a análise léxica e sintática de um programa em MiniPascal.
+ * @authors Jessica Bispo (10410798); Vitor Alves Pereira (10410862).
+ * @date    2025/2
  */
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 
-
 #define MAX_LEXEMA 256
 #define MAX_PARAMS 50
 
-// tipos de tokens (átomos)
+/** 
+ * @brief   Estrutura para representar os tipos de átomos (tokens) utilizados no processo de análise.
+ * @details Reconhece erros, identificadores, números, palavras reservadas, operadores e delimitadores.
+ */
 typedef enum {
     ERRO,
     IDENTIFICADOR,
     NUMERO,
+
+    PROGRAM, 
+    BEGIN,
+    END, 
+    PROCEDURE, 
+    FUNCTION,
+    IF, 
+    THEN, 
+    ELSE, 
+    WHILE, 
+    DO,
+    VAR, 
+    INTEGER, 
+    BOOLEAN,
+    TRUE_VAL, 
+    FALSE_VAL,
+    WRITE, 
+    READ,
+    AND, 
+    OR, 
+    NOT, 
+    DIV,
     
-    // palavras reservadas
-    PROGRAM, BEGIN, END, PROCEDURE, FUNCTION,
-    IF, THEN, ELSE, WHILE, DO,
-    VAR, INTEGER, BOOLEAN,
-    TRUE_VAL, FALSE_VAL,
-    WRITE, READ,
-    AND, OR, NOT, DIV,
-    
-    // operadores e delimitadores
     MAIS,               // +
     MENOS,              // -
     VEZES,              // *
@@ -58,7 +63,10 @@ typedef enum {
     EOS                 // fim do arquivo
 } TAtomo;
 
-// estrutura do token
+/**
+ * @brief   Estrutura para representar um token.
+ * @details Inclui o tipo do token, seu lexema, a linha onde foi encontrado e o valor inteiro (se aplicável).
+ */
 typedef struct {
     TAtomo tipo;
     char lexema[MAX_LEXEMA];
@@ -66,15 +74,10 @@ typedef struct {
     int valor_inteiro;
 } Token;
 
-
-FILE *arquivo_fonte;
-FILE *arquivo_saida;
-Token token_atual;
-int numero_linha = 1;
-char caractere_atual;
-int tem_erro = 0;
-
-// vetor de palavras reservadas usado ao inves do automatos
+/**
+ * @brief   Estrutura para mapear palavras reservadas a seus tipos de átomos correspondentes.
+ * @details Facilita a identificação de palavras reservadas durante a análise léxica.
+ */
 typedef struct {
     const char *palavra;
     TAtomo tipo;
@@ -103,16 +106,34 @@ PalavraReservada palavras_reservadas[] = {
     {"while", WHILE}
 };
 
+FILE *arquivo_fonte;
+FILE *arquivo_saida;
+
+Token token_atual;
+
+int tem_erro = 0;
+int numero_linha = 1;
+
+char caractere_atual;
+
 const int NUM_PALAVRAS = sizeof(palavras_reservadas) / sizeof(PalavraReservada);
 
-// func auxiliares
-
+/**
+ * @brief     Dada uma string recebida como parâmetro, a converte para lowercase.
+ * @param str String a ser convertida.
+ * @return    void
+ */
 void para_minusculo(char *str) {
     for (int i = 0; str[i]; i++) {
         str[i] = tolower(str[i]);
     }
 }
 
+/**
+ * @brief      Identifica um token enumerado e retorna seu nome como string.
+ * @param tipo Tipo do token (TAtomo).
+ * @return     Nome do token como string. 
+ */
 const char* nome_token(TAtomo tipo) {
     switch(tipo) {
         case IDENTIFICADOR: return "IDENTIFICADOR";
@@ -159,7 +180,12 @@ const char* nome_token(TAtomo tipo) {
     }
 }
 
-// verifica se um lexema eh uma palavra reservada
+/**
+ * @brief        Verifica se um lexema é uma palavra reservada.
+ * @param lexema Lexema a ser verificado.
+ * @param tipo   Ponteiro para armazenar o tipo do token, se for palavra reservada.
+ * @return       1 se for palavra reservada, 0 caso contrário.
+ */
 int eh_palavra_reservada(const char *lexema, TAtomo *tipo) {
     char lexema_lower[MAX_LEXEMA];
     strcpy(lexema_lower, lexema);
@@ -174,6 +200,11 @@ int eh_palavra_reservada(const char *lexema, TAtomo *tipo) {
     return 0;
 }
 
+/**
+ * @brief   Lê o próximo caractere do arquivo fonte.
+ * @details Atualiza o número da linha se um caractere de nova linha for encontrado.
+ * @return  O próximo caractere lido. 
+ */
 char proximo_char() {
     char c = fgetc(arquivo_fonte);
     if (c == '\n') {
@@ -182,6 +213,11 @@ char proximo_char() {
     return c;
 }
 
+/**
+ * @brief   Volta um caractere no arquivo fonte.
+ * @details Atualiza o número da linha se um caractere de nova linha for "deslido".
+ * @return  void
+ */
 void voltar_char() {
     long pos = ftell(arquivo_fonte);
     if (pos > 0) {
@@ -194,15 +230,27 @@ void voltar_char() {
     }
 }
 
-// analisador lexico ->
+/**
+ * ---------------------------------------------------------------->
+ *                        ANALISADOR LÉXICO
+ * ---------------------------------------------------------------->
+ */
 
+/**
+ * @brief Reconhece espaços em branco e os ignora.
+ * @return void 
+ */
 void pular_espacos() {
     while (isspace(caractere_atual) && caractere_atual != EOF) {
         caractere_atual = proximo_char();
     }
 }
 
-
+/**
+ * @brief   Reconhece comentários
+ * @details Inicia a análise pulando o indicador de abertura do comentário.
+ * @return  void 
+ */
 void tratar_comentario() {
     int linha_inicio = numero_linha;
     caractere_atual = proximo_char(); // pula o '/'
@@ -227,19 +275,22 @@ void tratar_comentario() {
     }
 }
 
+/**
+ * @brief   Reconhece identificadores e palavras reservadas.
+ * @details Coleta caracteres alfanuméricos e underscores para formar o lexema.
+ * @return  Token reconhecido (identificador ou palavra reservada). 
+ */
 Token reconhecer_identificador() {
     Token token;
     int i = 0;
     token.linha = numero_linha;
     
-    // Coleta caracteres alfanumericos e underscore
     while ((isalnum(caractere_atual) || caractere_atual == '_') && i < MAX_LEXEMA - 1) {
         token.lexema[i++] = caractere_atual;
         caractere_atual = proximo_char();
     }
     token.lexema[i] = '\0';
     
-    // Verifica se e palavra reservada
     if (eh_palavra_reservada(token.lexema, &token.tipo)) {
         fprintf(arquivo_saida, "%d# PALAVRA_RESERVADA | %s\n", token.linha, token.lexema);
         printf("%d# PALAVRA_RESERVADA | %s\n", token.linha, token.lexema);
@@ -252,6 +303,11 @@ Token reconhecer_identificador() {
     return token;
 }
 
+/**
+ * @brief   Reconhece números inteiros.
+ * @details Coleta caracteres numéricos para formar o lexema e converte para valor inteiro.
+ * @return  Token reconhecido (número). 
+ */
 Token reconhecer_numero() {
     Token token;
     int i = 0;
@@ -272,7 +328,13 @@ Token reconhecer_numero() {
     return token;
 }
 
-
+/**
+ * @brief        Cria um token com os dados fornecidos.
+ * @param tipo   Tipo do token (TAtomo).
+ * @param lexema Lexema do token.
+ * @param linha  Linha onde o token foi encontrado.
+ * @return       Token criado. 
+ */
 Token criar_token(TAtomo tipo, const char *lexema, int linha) {
     Token token;
     token.tipo = tipo;
@@ -286,7 +348,11 @@ Token criar_token(TAtomo tipo, const char *lexema, int linha) {
     return token;
 }
 
-// obtem o prox token
+/**
+ * @brief   Obtém o próximo token do arquivo fonte.
+ * @details Ignora espaços em branco e comentários, reconhece identificadores, números, operadores e delimitadores.
+ * @return  Token reconhecido. 
+ */
 Token obter_atomo() {
     Token token;
     
@@ -312,17 +378,17 @@ Token obter_atomo() {
         }
     }
     
-    // ===== IDENTIFICADORES e PALAVRAS RESERVADAS =====
+    // Reconhecimento de identificadores e palavras reservadas
     if (isalpha(caractere_atual) || caractere_atual == '_') {
         return reconhecer_identificador();
     }
     
-    // ===== NUMEROS =====
+    // Reconhecimento de números
     if (isdigit(caractere_atual)) {
         return reconhecer_numero();
     }
     
-    // ===== OPERADORES E DELIMITADORES =====
+    // Reconhecimento de operadores e delimitadores
     switch (caractere_atual) {
         case '+':
             token = criar_token(MAIS, "+", linha_token);
@@ -403,17 +469,19 @@ Token obter_atomo() {
             return token;
             
         default:
-            // Caractere inválido - ERRO LeXICO
-            printf("ERRO LeXICO: caractere inválido '%c' (ASCII %d) na linha %d\n", 
+            printf("ERRO LÉXICO: caractere inválido '%c' (ASCII %d) na linha %d\n", 
                    caractere_atual, (int)caractere_atual, linha_token);
             tem_erro = 1;
             exit(1);
     }
 }
 
-// analisador sintatico
+/**
+ * ---------------------------------------------------------------->
+ *                        ANALISADOR SINTÁTICO
+ * ---------------------------------------------------------------->
+ */
 
-// declarações forward (protótipos)
 void bloco();
 void parte_declaracao_variaveis();
 void declaracao_variavel();
@@ -439,6 +507,12 @@ int eh_operador_relacional();
 int eh_operador_adicao();
 int eh_operador_multiplicacao();
 
+/**
+ * @brief               Verifica se o token atual corresponde ao tipo esperado e avança para o próximo token.
+ * @details             Se o token atual não corresponder ao tipo esperado, exibe uma mensagem 
+ * @param tipo_esperado Tipo do token esperado (TAtomo).
+ * @return              void
+ */
 void consome(TAtomo tipo_esperado) {
     if (token_atual.tipo == tipo_esperado) {
         token_atual = obter_atomo();
@@ -451,7 +525,11 @@ void consome(TAtomo tipo_esperado) {
     }
 }
 
-// <program> ::= program <identifier> ; <block> .
+/**
+ * @brief   Inicia a análise sintática do programa.
+ * @details <program> ::= program <identifier> ; <block> .
+ * @return  void
+ */
 void programa() {
     printf("\n=== INICIANDO ANALISE SINTATICA ===\n\n");
     
@@ -465,17 +543,22 @@ void programa() {
     printf("Programa sintaticamente correto.\n");
 }
 
-// <block> ::= <variable declaration part>
-//             <subroutine declaration part>
-//             <statement part>
+/**
+ * @brief   Analisa um bloco do programa.
+ * @details <block> ::= <variable declaration part> <subroutine declaration part> <statement part>
+ * @return  void 
+ */
 void bloco() {
     parte_declaracao_variaveis();
     parte_declaracao_subrotinas();
     parte_comandos();
 }
 
-// <variable declaration part> ::= 
-//     <empty> | var <variable declaration> ; { var <variable declaration> ; }
+/**
+ * @brief   Analisa a parte de declaração de variáveis.
+ * @details <variable declaration part> ::= { var <variable declaration> ; }
+ * @return  void 
+ */
 void parte_declaracao_variaveis() {
     while (token_atual.tipo == VAR) {
         consome(VAR);
@@ -484,7 +567,11 @@ void parte_declaracao_variaveis() {
     }
 }
 
-// <variable declaration> ::= <identifier> { , <identifier> } : <type>
+/**
+ * @brief   Analisa uma declaração de variável.
+ * @details <variable declaration> ::= <identifier> { , <identifier> } : <type>
+ * @return  void 
+ */
 void declaracao_variavel() {
     consome(IDENTIFICADOR);
     
@@ -497,7 +584,11 @@ void declaracao_variavel() {
     tipo();
 }
 
-// <type> ::= integer | boolean
+/**
+ * @brief   Analisa um tipo de variável.
+ * @details <type> ::= integer | boolean
+ * @return  void 
+ */
 void tipo() {
     if (token_atual.tipo == INTEGER) {
         consome(INTEGER);
@@ -512,7 +603,11 @@ void tipo() {
     }
 }
 
-// <subroutine declaration part> ::= { <procedure declaration> | <function declaration> }
+/**
+ * @brief   Analisa a parte de declaração de sub-rotinas (procedimentos e funções).
+ * @details <subroutine declaration part> ::= { <procedure declaration> | <function declaration> }
+ * @return  void 
+ */
 void parte_declaracao_subrotinas() {
     while (token_atual.tipo == PROCEDURE || token_atual.tipo == FUNCTION) {
         if (token_atual.tipo == PROCEDURE) {
@@ -523,7 +618,11 @@ void parte_declaracao_subrotinas() {
     }
 }
 
-// <procedure declaration> ::= procedure <identifier> <formal parameters> ; <block> ;
+/**
+ * @brief   Analisa uma declaração de procedimento.
+ * @details <procedure declaration> ::= procedure <identifier> <formal parameters> ; <block> ;
+ * @return  void 
+ */
 void declaracao_procedimento() {
     consome(PROCEDURE);
     consome(IDENTIFICADOR);
@@ -535,7 +634,11 @@ void declaracao_procedimento() {
     consome(PONTO_VIRGULA);
 }
 
-// <function declaration> ::= function <identifier> <formal parameters> : <type> ; <block> ;
+/**
+ * @brief   Analisa uma declaração de função.
+ * @details <function declaration> ::= function <identifier> <formal parameters> : <type> ; <block> ;
+ * @return  void 
+ */
 void declaracao_funcao() {
     consome(FUNCTION);
     consome(IDENTIFICADOR);
@@ -549,7 +652,11 @@ void declaracao_funcao() {
     consome(PONTO_VIRGULA);
 }
 
-// <formal parameters> ::= ( [ var ] <identifier> : <type> { ; [ var ] <identifier> : <type> } )
+/**
+ * @brief   Analisa os parâmetros formais de uma sub-rotina.
+ * @details <formal parameters> ::= ( [ var ] <identifier> : <type> { ; [ var ] <identifier> : <type> } )
+ * @return  void 
+ */
 void parametros_formais() {
     if (token_atual.tipo == ABRE_PAR) {
         consome(ABRE_PAR);
@@ -580,7 +687,11 @@ void parametros_formais() {
     }
 }
 
-// <statement part> ::= begin <statement> { ; <statement> } end
+/**
+ * @brief   Analisa a parte de comandos do programa.
+ * @details <statement part> ::= begin <statement> { ; <statement> } end
+ * @return  void  
+ */
 void parte_comandos() {
     consome(BEGIN);
     
@@ -588,6 +699,7 @@ void parte_comandos() {
     
     while (token_atual.tipo == PONTO_VIRGULA) {
         consome(PONTO_VIRGULA);
+        
         // Permite ponto e vírgula antes do end
         if (token_atual.tipo != END) {
             comando();
@@ -597,7 +709,11 @@ void parte_comandos() {
     consome(END);
 }
 
-// <statement> ::= <assignment> | <if> | <while> | <read> | <write> | <compound> | <call>
+/**
+ * @brief   Analisa um comando.
+ * @details <statement> ::= <assignment statement> | <if statement> | <while statement> | <read statement> | <write statement> | <compound statement>
+ * @return  void 
+ */
 void comando() {
     if (token_atual.tipo == IDENTIFICADOR) {
         comando_atribuicao();
@@ -619,8 +735,11 @@ void comando() {
     }
 }
 
-// <assignment statement> ::= <variable> := <expression>
-// ou <function_procedure statement> ::= <identifier> ( <params> )
+/**
+ * @brief   Analisa um comando de atribuição ou chamada de procedimento.
+ * @details <assignment statement> ::= <identifier> := <expression> | <identifier> ( <expression> { , <expression> } )
+ * @return  void 
+ */
 void comando_atribuicao() {
     consome(IDENTIFICADOR);
     
@@ -628,11 +747,9 @@ void comando_atribuicao() {
         consome(ATRIBUICAO);
         expressao();
     } else if (token_atual.tipo == ABRE_PAR) {
-        // Chamada de funçao/procedimento
         consome(ABRE_PAR);
-        
+
         if (token_atual.tipo != FECHA_PAR) {
-            // Lista de parâmetros
             expressao();
             
             while (token_atual.tipo == VIRGULA) {
@@ -643,10 +760,13 @@ void comando_atribuicao() {
         
         consome(FECHA_PAR);
     }
-    // se nao tem := nem (, e apenas um identificador (valido em alguns contextos)
 }
 
-// <if statement> ::= if <expression> then <statement> [ else <statement> ]
+/**
+ * @brief   Analisa um comando condicional (if).
+ * @details <if statement> ::= if <expression> then <statement> [ else <statement> ]
+ * @return  void 
+ */
 void comando_if() {
     consome(IF);
     
@@ -667,7 +787,11 @@ void comando_if() {
     }
 }
 
-// <while statement> ::= while <expression> do <statement>
+/**
+ * @brief   Analisa um comando de repetição (while).
+ * @details <while statement> ::= while <expression> do <statement>
+ * @return  void 
+*/
 void comando_while() {
     consome(WHILE);
 
@@ -683,7 +807,11 @@ void comando_while() {
     comando();
 }
 
-// <read statement> ::= read ( <variable> { , <variable> } )
+/**
+ * @brief   Analisa um comando de leitura (read).
+ * @details <read statement> ::= read ( <identifier> { , <identifier> } )
+ * @return  void 
+ */
 void comando_read() {
     consome(READ);
     consome(ABRE_PAR);
@@ -697,7 +825,11 @@ void comando_read() {
     consome(FECHA_PAR);
 }
 
-// <write statement> ::= write ( <expression> { , <expression> } )
+/**
+ * @brief   Analisa um comando de escrita (write).
+ * @details <write statement> ::= write ( <expression> { , <expression> } )
+ * @return  void 
+ */
 void comando_write() {
     consome(WRITE);
     consome(ABRE_PAR);
@@ -712,12 +844,19 @@ void comando_write() {
     consome(FECHA_PAR);
 }
 
-// <compound statement> ::= begin <statement> { ; <statement> } end
+/**
+ * @brief   Analisa um comando composto (begin ... end).
+ * @details <compound statement> ::= begin <statement> { ; <statement> } end
+ * @return  void 
+ */
 void comando_composto() {
     parte_comandos();
 }
 
-// verifica se e operador relacional
+/**
+ * @brief   Verifica se o token atual é um operador relacional.
+ * @return  1 se for operador relacional, 0 caso contrário. 
+ */
 int eh_operador_relacional() {
     return (token_atual.tipo == MENOR || token_atual.tipo == MAIOR ||
             token_atual.tipo == IGUAL || token_atual.tipo == DIFERENTE ||
@@ -725,19 +864,29 @@ int eh_operador_relacional() {
             token_atual.tipo == AND || token_atual.tipo == OR);
 }
 
-// verifica se e operador de adiçao
+/**
+ * @brief   Verifica se o token atual é um operador de adição.
+ * @return  1 se for operador de adição, 0 caso contrário. 
+ */
 int eh_operador_adicao() {
     return (token_atual.tipo == MAIS || token_atual.tipo == MENOS || 
             token_atual.tipo == OR);
 }
 
-// verifica se e operador de multiplicaçao
+/**
+ * @brief   Verifica se o token atual é um operador de multiplicação.
+ * @return  1 se for operador de multiplicação, 0 caso contrário. 
+ */
 int eh_operador_multiplicacao() {
     return (token_atual.tipo == VEZES || token_atual.tipo == DIV || 
             token_atual.tipo == AND);
 }
 
-// <expression> ::= <simple expression> [ <relational operator> <simple expression> ]
+/**
+ * @brief   Analisa uma expressão.
+ * @details <expression> ::= <simple expression> [ <relational operator> <simple expression> ]
+ * @return  void 
+ */
 void expressao() {
     expressao_simples();
     
@@ -748,7 +897,11 @@ void expressao() {
     }
 }
 
-// <simple expression> ::= [ <sign> ] <term> { <adding operator> <term> }
+/**
+ * @brief   Analisa uma expressão simples.
+ * @details <simple expression> ::= [ + | - ] <term> { <adding operator> <term> }
+ * @return  void 
+ */
 void expressao_simples() {
     if (token_atual.tipo == MAIS || token_atual.tipo == MENOS) {
         consome(token_atual.tipo);
@@ -763,7 +916,11 @@ void expressao_simples() {
     }
 }
 
-// <term> ::= <factor> { <multiplying operator> <factor> }
+/**
+ * @brief   Analisa um termo.
+ * @details <term> ::= <factor> { <multiplying operator> <factor> }
+ * @return  void 
+ */
 void termo() {
     fator();
     
@@ -774,7 +931,11 @@ void termo() {
     }
 }
 
-// <factor> ::= <variable> | <constant> | ( <expression> ) | not <factor> | <bool>
+/**
+ * @brief   Analisa um fator.
+ * @details <factor> ::= <identifier> [ ( <expression> { , <expression> } ) ] | <number> | true | false | ( <expression> ) | not <factor>
+ * @return  void 
+ */
 void fator() {
     if (token_atual.tipo == IDENTIFICADOR) {
         consome(IDENTIFICADOR);
@@ -812,11 +973,17 @@ void fator() {
     }
 }
 
-
+/**
+ * @brief      Função principal do compilador.
+ * @details    Recebe o nome do arquivo fonte como argumento, inicia a análise léxica e sintática e gera um arquivo de tokens.
+ * @param argc Número de argumentos da linha de comando.
+ * @param argv Vetor de argumentos da linha de comando.
+ * @return     Código de saída (0 para sucesso, 1 para erro). 
+ */
 int main(int argc, char *argv[]) {
     printf("╔════════════════════════════════════════════════════════╗\n");
-    printf("║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║\n");
-    printf("║              Análise Lexica e Sintática               ║\n");
+    printf("║        COMPILADOR MINIPASCAL - VERSAO COMPLETA         ║\n");
+    printf("║              Análise Lexica e Sintática                ║\n");
     printf("╚════════════════════════════════════════════════════════╝\n\n");
     
     if (argc < 2) {
@@ -825,8 +992,8 @@ int main(int argc, char *argv[]) {
         return 1;
     }
     
-    // Abre arquivo fonte
     arquivo_fonte = fopen(argv[1], "r");
+
     if (!arquivo_fonte) {
         printf("ERRO: Nao foi possível abrir o arquivo '%s'\n", argv[1]);
         printf("Verifique se o arquivo existe e está acessível.\n");
@@ -834,6 +1001,7 @@ int main(int argc, char *argv[]) {
     }
     
     arquivo_saida = fopen("saida/tokens.txt", "w");
+
     if (!arquivo_saida) {
         printf("ERRO: Nao foi possível criar o arquivo de saida 'tokens.txt'\n");
         fclose(arquivo_fonte);
@@ -842,27 +1010,23 @@ int main(int argc, char *argv[]) {
     
     printf("Arquivo fonte: %s\n", argv[1]);
     printf("Arquivo de tokens: tokens.txt\n\n");
-    printf("=== INICIANDO ANÁLISE LeXICA ===\n\n");
+    printf("=== INICIANDO ANÁLISE LÉXICA ===\n\n");
     
-    //inicializo
     caractere_atual = proximo_char();
-    
-    // obtem o primeiro token
     token_atual = obter_atomo();
-    
+
     printf("\n");
     
     // inicia analise sintatica
     programa();
     
-    // fecha arquivos
     fclose(arquivo_fonte);
     fclose(arquivo_saida);
     
     printf("\n╔════════════════════════════════════════════════════════╗\n");
-    printf("║                  COMPILAÇAO CONCLUIDA                  ║\n");
-    printf("║           Arquivo de tokens gerado com sucesso         ║\n");
-    printf("╚════════════════════════════════════════════════════════╝\n");
+    printf("║                  COMPILAÇAO CONCLUIDA                    ║\n");
+    printf("║           Arquivo de tokens gerado com sucesso           ║\n");
+    printf("╚══════════════════════════════════════════════════════════╝\n");
     
     return 0;
 }
