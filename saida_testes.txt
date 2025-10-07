@@ -1,6 +1,6 @@
-🚀 Iniciando execução dos testes em 'testes'...
+iniciando execucao dos testes em 'testes'...
 ==============================================
-🧪 Rodando teste: testes/teste-COMENTARIO.mp
+rodando teste: testes/teste-COMENTARIO.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -179,9 +179,9 @@ Programa sintaticamente correto.
 ║                  COMPILAÇAO CONCLUIDA                  ║
 ║           Arquivo de tokens gerado com sucesso         ║
 ╚════════════════════════════════════════════════════════╝
-✅ teste 'testes/teste-COMENTARIO.mp' executado com sucesso
+teste 'testes/teste-COMENTARIO.mp' executado com sucesso
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-BEGIN6ou7.mp
+rodando teste: testes/teste-erro-BEGIN6ou7.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -249,9 +249,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 7:
   Esperado: begin
   Encontrado: IDENTIFICADOR ('a')
-⚠️  teste 'testes/teste-erro-BEGIN6ou7.mp' retornou erro (código 1)
+teste 'testes/teste-erro-BEGIN6ou7.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-BEGINPV7.txt
+rodando teste: testes/teste-erro-BEGINPV7.txt
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -319,9 +319,9 @@ Arquivo de tokens: tokens.txt
 
 ERRO SINTATICO na linha 7:
   Comando invalido: ;
-⚠️  teste 'testes/teste-erro-BEGINPV7.txt' retornou erro (código 1)
+teste 'testes/teste-erro-BEGINPV7.txt' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-CHAVES4.mp
+rodando teste: testes/teste-erro-CHAVES4.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -360,9 +360,9 @@ Arquivo de tokens: tokens.txt
 4# PALAVRA_RESERVADA | procedure
 4# IDENTIFICADOR | proc
 ERRO LeXICO: caractere inválido '{' (ASCII 123) na linha 4
-⚠️  teste 'testes/teste-erro-CHAVES4.mp' retornou erro (código 1)
+teste 'testes/teste-erro-CHAVES4.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-END10ou11.mp
+rodando teste: testes/teste-erro-END10ou11.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -534,9 +534,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 32:
   Esperado: end
   Encontrado: . ('.')
-⚠️  teste 'testes/teste-erro-END10ou11.mp' retornou erro (código 1)
+teste 'testes/teste-erro-END10ou11.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-FLOAT8.mp
+rodando teste: testes/teste-erro-FLOAT8.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -608,9 +608,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 8:
   Esperado: end
   Encontrado: , (',')
-⚠️  teste 'testes/teste-erro-FLOAT8.mp' retornou erro (código 1)
+teste 'testes/teste-erro-FLOAT8.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-ID2.mp
+rodando teste: testes/teste-erro-ID2.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -636,9 +636,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 2:
   Esperado: IDENTIFICADOR
   Encontrado: NUMERO ('2')
-⚠️  teste 'testes/teste-erro-ID2.mp' retornou erro (código 1)
+teste 'testes/teste-erro-ID2.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-PARENTESES9.mp
+rodando teste: testes/teste-erro-PARENTESES9.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -715,9 +715,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 9:
   Esperado: then
   Encontrado: ) (')')
-⚠️  teste 'testes/teste-erro-PARENTESES9.mp' retornou erro (código 1)
+teste 'testes/teste-erro-PARENTESES9.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-PONTOFINAL.mp
+rodando teste: testes/teste-erro-PONTOFINAL.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -891,9 +891,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 33:
   Esperado: .
   Encontrado: EOF ('EOF')
-⚠️  teste 'testes/teste-erro-PONTOFINAL.mp' retornou erro (código 1)
+teste 'testes/teste-erro-PONTOFINAL.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-PONTOVIRGULA2.mp
+rodando teste: testes/teste-erro-PONTOVIRGULA2.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -924,9 +924,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 3:
   Esperado: ;
   Encontrado: var ('var')
-⚠️  teste 'testes/teste-erro-PONTOVIRGULA2.mp' retornou erro (código 1)
+teste 'testes/teste-erro-PONTOVIRGULA2.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-PORCENTAGEM9.mp
+rodando teste: testes/teste-erro-PORCENTAGEM9.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -998,9 +998,9 @@ Arquivo de tokens: tokens.txt
 9# ( | (
 9# IDENTIFICADOR | a
 ERRO LeXICO: caractere inválido '%' (ASCII 37) na linha 9
-⚠️  teste 'testes/teste-erro-PORCENTAGEM9.mp' retornou erro (código 1)
+teste 'testes/teste-erro-PORCENTAGEM9.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-PROGRAM.mp
+rodando teste: testes/teste-erro-PROGRAM.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -1020,9 +1020,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 1:
   Esperado: program
   Encontrado: IDENTIFICADOR ('correto')
-⚠️  teste 'testes/teste-erro-PROGRAM.mp' retornou erro (código 1)
+teste 'testes/teste-erro-PROGRAM.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-THEN9.mp
+rodando teste: testes/teste-erro-THEN9.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -1101,9 +1101,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 9:
   Esperado: then
   Encontrado: IDENTIFICADOR ('thennnn')
-⚠️  teste 'testes/teste-erro-THEN9.mp' retornou erro (código 1)
+teste 'testes/teste-erro-THEN9.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-TIPODADO2.mp
+rodando teste: testes/teste-erro-TIPODADO2.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -1133,9 +1133,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 2:
   Esperado: tipo (integer ou boolean)
   Encontrado: float
-⚠️  teste 'testes/teste-erro-TIPODADO2.mp' retornou erro (código 1)
+teste 'testes/teste-erro-TIPODADO2.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste-erro-VAR2.mp
+rodando teste: testes/teste-erro-VAR2.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -1158,9 +1158,9 @@ Arquivo de tokens: tokens.txt
 ERRO SINTÁTICO na linha 2:
   Esperado: begin
   Encontrado: IDENTIFICADOR ('a')
-⚠️  teste 'testes/teste-erro-VAR2.mp' retornou erro (código 1)
+teste 'testes/teste-erro-VAR2.mp' retornou erro (código 1)
 ----------------------------------------------
-🧪 Rodando teste: testes/teste.mp
+rodando teste: testes/teste.mp
 ╔════════════════════════════════════════════════════════╗
 ║        COMPILADOR MINIPASCAL - VERSAO COMPLETA        ║
 ║              Análise Lexica e Sintática               ║
@@ -1339,6 +1339,5 @@ Programa sintaticamente correto.
 ║                  COMPILAÇAO CONCLUIDA                  ║
 ║           Arquivo de tokens gerado com sucesso         ║
 ╚════════════════════════════════════════════════════════╝
-✅ teste 'testes/teste.mp' executado com sucesso
+teste 'testes/teste.mp' executado com sucesso
 ----------------------------------------------
-🏁 Todos os testes foram executados!
