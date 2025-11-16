@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "../../../include/beautifulPrint.h"
 #include "../../../include/symbolTable.h"
+#include "../../../include/syntacticAnalysis.h"
 
 void printTitle() {
     printf(BOLD_CYAN
@@ -21,6 +22,42 @@ void printTitle() {
         BOLD_BLUE"[+] "CYAN"Geração de Código Intermediário\n"RESET
     );
 
+}
+
+void printErrorTable(ErrorTable **error_table) {
+    printf("\n%-6s | %-20s | %-55s | %-30s | %-5s\n", "TYPE", "MESSAGE", "SNIPPET", "FILENAME", "LINE");
+    printf("-------------------------------------------------------------------------------------------------------------------------------\n");
+
+    if (!error_table || !(*error_table)) {
+        printf("Tabela de erros vazia.\n");
+        return;
+    }
+
+    ErrorTable *table = *error_table;
+    
+    if (table->count == 0) {
+        printf("Tabela de erros vazia.\n");
+        return;
+    }
+
+    int found = 0;
+    for (unsigned int i = 0; i < table->size; ++i) {
+        Error *current = table->errors[i];
+        while (current) {
+            printf("%-6s | %-20s | %-55s | %-30s | %-5d\n",
+                   "ERROR",
+                   current->description && current->description[0] ? current->description : "-",
+                   current->snippet && current->snippet[0] ? current->snippet : "-",
+                   current->filename && current->filename[0] ? current->filename : "-",
+                   current->line);
+            found = 1;
+            current = current->next;
+        }
+    }
+
+    if (!found) {
+        printf("Tabela de erros vazia.\n");
+    }
 }
 
 void printSymbolTable(SymbolTable **hash_table) {

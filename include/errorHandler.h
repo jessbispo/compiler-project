@@ -22,13 +22,19 @@ typedef enum {
  * @field description Detailed description of the error
  * @field timestamp When the error occurred
  * @field type Type of the error (lexical, syntactic, semantic, runtime)
+ * @field line Line number where error occurred
+ * @field filename Name of the file where error occurred
  * @field next Pointer to handle collision resolution in hash table
  */
 typedef struct Error {
     char* name;
     char* description;
+    char* message;
     time_t timestamp;
     ErrorType type;
+    int line;
+    char* filename;
+    char* snippet;
     struct Error* next;
 } Error;
 
@@ -40,9 +46,14 @@ typedef struct Error {
  * @field count Number of errors currently stored
  * @field errors Array of error entry pointers (collision lists)
  */
-typedef struct {
+typedef struct ErrorTable {
     unsigned int size;
+    unsigned int line;
     unsigned int count;
+    char *message;
+    char *type;
+    char *filename;
+    struct ErrorTable* next;
     Error** errors;
 } ErrorTable;
 
@@ -70,9 +81,11 @@ unsigned int hashError(const char* name, unsigned int tableSize);
  * @param name Name/identifier of the error
  * @param description Detailed description of the error
  * @param type Type of the error
+ * @param line Line number where error occurred
+ * @param filename Name of file where error occurred
  * @return int 0 on success, -1 on failure
  */
-int insertError(ErrorTable* table, const char* name, const char* description, ErrorType type);
+int insertError(ErrorTable* table, const char* name, const char* description, ErrorType type, int line, const char* filename);
 
 /**
  * @brief Retrieves an error from the table by its name
@@ -104,6 +117,6 @@ void destroyErrorTable(ErrorTable* table);
  * 
  * @param table The error table to print
  */
-void printErrorTable(const ErrorTable* table);
+void printErrorTable(ErrorTable** table);
 
 #endif /* ERROR_HANDLER_H */

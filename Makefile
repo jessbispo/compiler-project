@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wno-unused-result -g -Og
+CFLAGS=-Wall -Wno-unused-result -g -Og -I include
 BIN_DIR=bin
 BUILD_DIR=build
 INCLUDE_DIR=include
@@ -12,6 +12,9 @@ COMPILER_OBJ=$(BUILD_DIR)/main.o
 # Common source files
 COMMON_SRC=\
 	frontend/lexicalAnalysis.c \
+	frontend/semanticAnalysis.c \
+	frontend/syntacticAnalysis.c \
+	frontend/intermediateCodeGenerator.c \
 	utility/afn/impl/comment-afn.c \
 	utility/afn/impl/datatype-afn.c \
 	utility/afn/impl/delimiter-afn.c \
@@ -34,6 +37,7 @@ TEST_SYMBOL_TABLE=$(BIN_DIR)/runSymbolTable
 # Headers
 HEADERS=\
 	include/lexicalAnalysis.h \
+	include/syntacticAnalysis.h \
 	src/utility/afn/header/comment-afn.h \
 	src/utility/afn/header/datatype-afn.h \
 	src/utility/afn/header/delimiter-afn.h \

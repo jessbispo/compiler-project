@@ -28,9 +28,10 @@ typedef struct Token {
  * and empty lexeme, or by a separate convention used in the project.
  *
  * @param input Null-terminated input string to tokenize.
+ * @param filename Name of the file being analyzed.
  * @return Pointer to the first element of a dynamically allocated Token
  *         array. Caller must free() the returned pointer when done.
  */
-Token* lexicalAnalysis(const char *input, SymbolTable **symtab, ErrorTable *errtab);
+Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **symtab, ErrorTable *errtab);
 
 #endif /* TOKEN_H */

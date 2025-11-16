@@ -28,7 +28,7 @@ unsigned int hashError(const char* name, unsigned int tableSize) {
     return hash;
 }
 
-int insertError(ErrorTable* table, const char* name, const char* description, ErrorType type) {
+int insertError(ErrorTable* table, const char* name, const char* description, ErrorType type, int line, const char* filename) {
     if (!table || !name || !description) return -1;
 
     unsigned int index = hashError(name, table->size);
@@ -39,14 +39,40 @@ int insertError(ErrorTable* table, const char* name, const char* description, Er
     newError->description = strdup(description);
     newError->timestamp = time(NULL);
     newError->type = type;
+    newError->line = line;
+    newError->filename = filename ? strdup(filename) : strdup("<unknown>");
+    newError->snippet = NULL;
     newError->next = NULL;
 
-    if (!newError->name || !newError->description) {
+    if (!newError->name || !newError->description || !newError->filename) {
         free(newError->name);
         free(newError->description);
+        free(newError->filename);
+        free(newError->snippet);
         free(newError);
         return -1;
     }
+
+    /* Try to extract the exact line snippet from the source file, if available */
+    if (filename && line > 0 && strcmp(filename, "<unknown>") != 0) {
+        FILE *f = fopen(filename, "r");
+        if (f) {
+            char buf[2048];
+            int cur = 1;
+            while (fgets(buf, sizeof(buf), f)) {
+                if (cur == line) {
+                    /* Trim trailing newline */
+                    size_t l = strlen(buf);
+                    while (l > 0 && (buf[l-1] == '\n' || buf[l-1] == '\r')) { buf[--l] = '\0'; }
+                    newError->snippet = strdup(buf[0] ? buf : "-");
+                    break;
+                }
+                cur++;
+            }
+            fclose(f);
+        }
+    }
+    if (!newError->snippet) newError->snippet = strdup("-");
 
     // Handle collision using chaining
     if (table->errors[index]) {
@@ -91,6 +117,8 @@ int removeError(ErrorTable* table, const char* name) {
 
             free(current->name);
             free(current->description);
+            free(current->snippet);
+            free(current->filename);
             free(current);
             table->count--;
             return 0;
@@ -111,6 +139,8 @@ void destroyErrorTable(ErrorTable* table) {
             Error* next = current->next;
             free(current->name);
             free(current->description);
+            free(current->snippet);
+            free(current->filename);
             free(current);
             current = next;
         }
@@ -118,50 +148,6 @@ void destroyErrorTable(ErrorTable* table) {
 
     free(table->errors);
     free(table);
-}
-
-void printErrorTable(const ErrorTable* table) {
-    if (!table) return;
-
-    printf("\n=== Error Table ===\n");
-    printf("Total Errors: %u\n\n", table->count);
-
-    for (unsigned int i = 0; i < table->size; i++) {
-        Error* current = table->errors[i];
-        if (current) {
-            printf("Bucket %u:\n", i);
-            while (current) {
-                char* errorType;
-                switch (current->type) {
-                    case LEXICAL_ERROR:
-                        errorType = "LEXICAL";
-                        break;
-                    case SYNTACTIC_ERROR:
-                        errorType = "SYNTACTIC";
-                        break;
-                    case SEMANTIC_ERROR:
-                        errorType = "SEMANTIC";
-                        break;
-                    case RUNTIME_ERROR:
-                        errorType = "RUNTIME";
-                        break;
-                    default:
-                        errorType = "UNKNOWN";
-                }
-
-                char timeStr[26];
-                ctime_r(&current->timestamp, timeStr);
-                timeStr[24] = '\0';  // Remove newline
-
-                printf("  Name: %s\n", current->name);
-                printf("  Description: %s\n", current->description);
-                printf("  Type: %s\n", errorType);
-                printf("  Timestamp: %s\n\n", timeStr);
-
-                current = current->next;
-            }
-        }
-    }
 }
 
 #ifdef BUILD_MAIN_STANDALONE
@@ -172,11 +158,11 @@ int main() {
         return 1;
     }
 
-    insertError(table, "Error1", "This is a lexical error.", LEXICAL_ERROR);
-    insertError(table, "Error2", "This is a syntactic error.", SYNTACTIC_ERROR);
-    insertError(table, "Error3", "This is a semantic error.", SEMANTIC_ERROR);
+    insertError(table, "Error1", "This is a lexical error.", LEXICAL_ERROR, 1, "<unknown>");
+    insertError(table, "Error2", "This is a syntactic error.", SYNTACTIC_ERROR, 2, "<unknown>");
+    insertError(table, "Error3", "This is a semantic error.", SEMANTIC_ERROR, 3, "<unknown>");
 
-    printErrorTable(table);
+    printErrorTable(&table);
 
     Error* found = findError(table, "Error2");
     if (found) {

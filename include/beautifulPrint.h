@@ -3,6 +3,9 @@
 
 #include <stdio.h>
 #include "symbolTable.h"
+#include "errorHandler.h"
+/* forward declare ASTNode to avoid include cycles */
+typedef struct ASTNode ASTNode;
 
 #define RESET        "\033[0m"
 
@@ -26,6 +29,8 @@ void printTitle();
  * 
  */
 void printSymbolTable(SymbolTable **hash_table);
+
+void printErrorTable(ErrorTable **error_table);
 
 void printMessage(char *message, int messageType);
 

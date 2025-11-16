@@ -88,6 +88,53 @@ SymbolTable* searchSymbol(SymbolTable **hash_table, const char *name) {
     return NULL;
 }
 
+void destroySymbolTable(SymbolTable **hash_table) {
+    if (!hash_table) return;
+
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        SymbolTable *current = hash_table[i];
+        while (current != NULL) {
+            SymbolTable *next = current->next;
+            free(current->name);
+            free(current->category);
+            free(current->type);
+            free(current->scope);
+            free(current->address);
+            free(current->parameters);
+            free(current->literal_value);
+            free(current->declared_in);
+            free(current->visibility);
+            free(current);
+            current = next;
+        }
+    }
+
+    free(hash_table);
+}
+
+void clearSymbolTable(SymbolTable **hash_table) {
+    if (!hash_table) return;
+
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        SymbolTable *current = hash_table[i];
+        while (current != NULL) {
+            SymbolTable *next = current->next;
+            free(current->name);
+            free(current->category);
+            free(current->type);
+            free(current->scope);
+            free(current->address);
+            free(current->parameters);
+            free(current->literal_value);
+            free(current->declared_in);
+            free(current->visibility);
+            free(current);
+            current = next;
+        }
+        hash_table[i] = NULL;
+    }
+}
+
 #ifdef BUILD_MAIN_STANDALONE
 int main() {
     printf("[ SYMBOL TABLE TESTING MODE ]\n");

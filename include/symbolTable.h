@@ -66,4 +66,14 @@ int insertSymbol(SymbolTable **hash_table, SymbolTable *symbol);
  */
 SymbolTable* searchSymbol(SymbolTable **hash_table, const char *name);
 
+/** @brief Libera toda a memória da tabela de símbolos
+ *  @param hash_table Ponteiro para a Tabela Hash de Símbolos
+ */
+void destroySymbolTable(SymbolTable **hash_table);
+
+/** @brief Limpa todos os símbolos da tabela mantendo a alocação
+ *  @param hash_table Ponteiro para a Tabela Hash de Símbolos
+ */
+void clearSymbolTable(SymbolTable **hash_table);
+
 #endif /* SYMBOL_TABLE_H */
