@@ -1,7 +1,13 @@
+/** @brief Implementação do autômato finito não-determinístico para validação de operadores em MiniPascal.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile operator-afn.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "../header/operator-afn.h"
+#include "../../../include/operator-afn.h"
 
 OperatorState operator_next_state(OperatorState current, char c) {
     switch (current) {
@@ -23,7 +29,7 @@ OperatorState operator_next_state(OperatorState current, char c) {
 
         case OP_Q3:
             if (c == '=') return OP_Q2;
-            if (c == '>') return OP_Q2; // for <>
+            if (c == '>') return OP_Q2;
             return OP_Q_SINK;
 
         case OP_Q_SINK:

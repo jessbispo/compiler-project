@@ -1,15 +1,13 @@
-/** @brief Implementação do autômato para validação de comentários de bloco.
- * @authors Jessica Bispo (), Vitor Alves Pereira (10410862)
+/** @brief Autômato finito não-determinístico para validação de comentários de bloco em MiniPascal.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile comment-afn.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862) 
  */
 
-#include "../header/comment-afn.h"
+#include "../../../include/comment-afn.h"
 #include <stdio.h>
 #include <string.h>
 
-/** @brief Validação de comentários de bloco utilizados em MiniPascal.
- * @param input String de entrada a ser verificada
- * @return 0 se a entrada for um comentario válido e 1 caso contrário.
- */
 int comment_afn(const char *input) {
     CommentState state = C_Q0;
 

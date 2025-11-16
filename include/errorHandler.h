@@ -1,11 +1,18 @@
+/** @brief ErrorHandler é o módulo responsável por gerenciar a tabela de erros do compilador.
+ *  @details É utilizado para gerenciar e armazenar erros léxicos, sintáticos e semânticos encontrados durante o processo de compilação.
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #ifndef ERROR_HANDLER_H
 #define ERROR_HANDLER_H
 
 #include <time.h>
 
-/**
- * @enum ErrorType
- * @brief Enumeration of possible error types in the compilation process
+/** @brief Enumeração dos tipos de erro que a tabela de erros pode registrar.
+ *  @property LEXICAL_ERROR Erro léxico
+ *  @property SYNTACTIC_ERROR Erro sintático
+ *  @property SEMANTIC_ERROR Erro semântico
+ *  @property RUNTIME_ERROR Erro em tempo de execução
  */
 typedef enum {
     LEXICAL_ERROR,
@@ -14,17 +21,15 @@ typedef enum {
     RUNTIME_ERROR
 } ErrorType;
 
-/**
- * @struct Error
- * @brief Structure to store information about a compilation error
- * 
- * @field name Name/identifier of the error
- * @field description Detailed description of the error
- * @field timestamp When the error occurred
- * @field type Type of the error (lexical, syntactic, semantic, runtime)
- * @field line Line number where error occurred
- * @field filename Name of the file where error occurred
- * @field next Pointer to handle collision resolution in hash table
+/** @brief Estrutura para representar um erro a ser categorizado e armazenado na tabela de erros.
+ *  @property name Nome/identificador do erro
+ *  @property description Descrição detalhada do erro
+ *  @property timestamp Timestamp indicando quando o erro foi registrado
+ *  @property type Tipo do erro (léxico, sintático, semântico, etc.)
+ *  @property line Linha onde o erro ocorreu
+ *  @property filename Nome do arquivo onde o erro ocorreu
+ *  @property snippet Trecho de código relacionado ao erro
+ *  @property next Ponteiro para o próximo erro na lista (para tratamento de colisões
  */
 typedef struct Error {
     char* name;
@@ -38,13 +43,10 @@ typedef struct Error {
     struct Error* next;
 } Error;
 
-/**
- * @struct ErrorTable
- * @brief Hash table structure to store compilation errors
- * 
- * @field size The size of the hash table
- * @field count Number of errors currently stored
- * @field errors Array of error entry pointers (collision lists)
+/** @brief Estrutura para representar a tabela de erros usando uma tabela hash.
+ *  @property size Tamanho da tabela hash
+ *  @property count Número atual de erros armazenados na tabela
+ *  @property errors Array de ponteiros para listas encadeadas de erros (para tratamento de colisões)
  */
 typedef struct ErrorTable {
     unsigned int size;
@@ -57,65 +59,51 @@ typedef struct ErrorTable {
     Error** errors;
 } ErrorTable;
 
-/**
- * @brief Creates a new error table with the specified size
- * 
- * @param size Initial size of the hash table
- * @return ErrorTable* Pointer to the newly created error table, NULL if allocation fails
+/** @brief Inicializa uma tabela de erros
+ *  @param size Tamanho inicial da tabela de erros
+ *  @return ErrorTable* Ponteiro para a tabela de erros criada, ou NULL em caso de falha
  */
 ErrorTable* createErrorTable(unsigned int size);
 
-/**
- * @brief Computes the hash value for an error name
- * 
- * @param name The error name to hash
- * @param tableSize The size of the hash table
- * @return unsigned int The computed hash value
+/** @brief Função hash para mapear o nome do erro para um índice na tabela
+ *  @param name Nome do erro
+ *  @param tableSize Tamanho da tabela de erros
+ *  @return unsigned int Índice calculado na tabela
  */
 unsigned int hashError(const char* name, unsigned int tableSize);
 
-/**
- * @brief Inserts a new error into the error table
- * 
- * @param table The error table to insert into
- * @param name Name/identifier of the error
- * @param description Detailed description of the error
- * @param type Type of the error
- * @param line Line number where error occurred
- * @param filename Name of file where error occurred
- * @return int 0 on success, -1 on failure
+/** @brief Insere um novo erro na tabela de erros 
+ *  @param table A tabela de erros onde o erro será inserido
+ *  @param name Nome do erro
+ *  @param description Descrição detalhada do erro
+ *  @param type Tipo do erro (léxico, sintático, semântico, etc.)
+ *  @param line Linha onde o erro ocorreu
+ *  @param filename Nome do arquivo onde o erro ocorreu
+ *  @return int 0 em caso de sucesso, -1 em caso de falha
  */
 int insertError(ErrorTable* table, const char* name, const char* description, ErrorType type, int line, const char* filename);
 
-/**
- * @brief Retrieves an error from the table by its name
- * 
- * @param table The error table to search in
- * @param name The name of the error to find
- * @return Error* Pointer to the found error, NULL if not found
+/** @brief Procura um erro na tabela pelo seu nome
+ *  @param table A tabela de erros onde a busca será realizada
+ *  @param name O nome do erro a ser buscado
+ *  @return Error* Ponteiro para o erro encontrado, ou NULL se não encontrado
  */
 Error* findError(ErrorTable* table, const char* name);
 
-/**
- * @brief Removes an error from the table
- * 
- * @param table The error table to remove from
- * @param name The name of the error to remove
- * @return int 0 on success, -1 if error not found
+/** @brief Remove um erro da tabela pelo seu nome
+ *  @param table A tabela de erros de onde o erro será removido
+ *  @param name O nome do erro a ser removido
+ *  @return int 0 em caso de sucesso, -1 se o erro não for encontrado
  */
 int removeError(ErrorTable* table, const char* name);
 
-/**
- * @brief Cleans up and frees all memory used by the error table
- * 
- * @param table The error table to destroy
+/** @brief Destrói a tabela de erros, liberando toda a memória alocada
+ *  @param table A tabela de erros a ser destruída
  */
 void destroyErrorTable(ErrorTable* table);
 
-/**
- * @brief Prints all errors in the table
- * 
- * @param table The error table to print
+/** @brief Imprime o conteúdo da tabela de erros para depuração
+ *  @param table A tabela de erros a ser impressa
  */
 void printErrorTable(ErrorTable** table);
 

@@ -1,8 +1,14 @@
+/** @brief Implementação do autômato finito não-determinístico para validação de identificadores em MiniPascal.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile identifier-afn.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include <stdbool.h>
 #include <ctype.h>
 #include <string.h>
-#include "../header/identifier-afn.h"
+#include "../../../include/identifier-afn.h"
 
 int identifier_afn(const char *input) {
     IdentifierState state = ID_Q0;
@@ -36,7 +42,7 @@ int identifier_afn(const char *input) {
 
         i++;
     }
-    /* Return 1 when accepted (state ID_Q1), 0 otherwise */
+    
     return (state == ID_Q1) ? 1 : 0;
 }
 

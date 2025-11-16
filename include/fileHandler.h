@@ -1,7 +1,6 @@
 /** @brief File Handler é um módulo responsável pelo gerenciamento e manipulação de arquivos.
- *  @headerfile fileHnadler.h 
- *  @authors Jessica Bispo, Vitor Alves Pereira
- *  @date 2025-11-11
+ *  @details Este módulo fornece funcionalidades para abrir, ler, escrever e fechar arquivos, além de validar caminhos de arquivos.
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
  */
 
 #ifndef FILEHANDLER_H

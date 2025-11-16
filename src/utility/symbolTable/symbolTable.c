@@ -1,3 +1,9 @@
+/** @brief Implementação das funções do módulo SymbolTable.
+ *  @details A documentação de cada função está presente no arquivo de cabeçalho correspondente.
+ *  @headerfile symbolTable.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,24 +55,20 @@ int insertSymbol(SymbolTable **hash_table, SymbolTable *symbol) {
     
     unsigned int index = hashFunction(symbol->name);
     
-    // Se a posição estiver vazia
     if (hash_table[index] == NULL) {
         hash_table[index] = symbol;
         return 1;
     }
     
-    // Tratamento de colisão por encadeamento
     SymbolTable *current = hash_table[index];
     while (current->next != NULL) {
         if (strcmp(current->name, symbol->name) == 0) {
-            // Símbolo já existe
             return 0;
         }
         if (current->next == NULL) break;
         current = current->next;
     }
     
-    // Adiciona no final da lista
     current->next = symbol;
     return 1;
 }
@@ -76,7 +78,6 @@ SymbolTable* searchSymbol(SymbolTable **hash_table, const char *name) {
     
     unsigned int index = hashFunction(name);
     
-    // Procura na lista encadeada da posição hash
     SymbolTable *current = hash_table[index];
     while (current != NULL) {
         if (strcmp(current->name, name) == 0) {
@@ -133,6 +134,43 @@ void clearSymbolTable(SymbolTable **hash_table) {
         }
         hash_table[i] = NULL;
     }
+}
+
+char* getSymbolTable(SymbolTable **hash_table) {
+    if (!hash_table) return NULL;
+
+    size_t buffer_size = 1024; 
+    char *buffer = (char *)malloc(buffer_size);
+    if (!buffer) return NULL;
+    buffer[0] = '\0';
+
+    for (int i = 0; i < HASH_TABLE_SIZE; i++) {
+        SymbolTable *current = hash_table[i];
+        while (current != NULL) {
+            char entry[512];
+            snprintf(entry, sizeof(entry),
+                     "Name: %s, Category: %s, Type: %s, Scope: %s, Address: %s, Size: %d, Parameters: %s, Literal Value: %s, Declared In: %s, Visibility: %s, Line: %d\n",
+                     current->name, current->category, current->type, current->scope,
+                     current->address, current->size, current->parameters,
+                     current->literal_value, current->declared_in,
+                     current->visibility, current->line);
+
+            if (strlen(buffer) + strlen(entry) + 1 > buffer_size) {
+                buffer_size *= 2;
+                char *new_buffer = (char *)realloc(buffer, buffer_size);
+                if (!new_buffer) {
+                    free(buffer);
+                    return NULL;
+                }
+                buffer = new_buffer;
+            }
+
+            strcat(buffer, entry);
+            current = current->next;
+        }
+    }
+
+    return buffer;
 }
 
 #ifdef BUILD_MAIN_STANDALONE

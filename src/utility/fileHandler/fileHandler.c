@@ -1,9 +1,9 @@
-/** @brief File Handler é um módulo responsável pelo gerenciamento e manipulação de arquivos.
- *  @details A documentação completa do módulo File Handler pode ser encontrada em fileHandler.h.
- *  @headerfile fileHnadler.h 
- *  @authors Jessica Bispo, Vitor Alves Pereira
- *  @date 2025-11-11
+/** @brief Implementação das funções do módulo FileHandler.
+ *  @details A documentação de cada função está presente no arquivo de cabeçalho correspondente.
+ *  @headerfile fileHandler.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
  */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>

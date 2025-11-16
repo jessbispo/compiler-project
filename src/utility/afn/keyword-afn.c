@@ -1,5 +1,11 @@
-#include "../header/keyword-afn.h"
+/** @brief Implementação do autômato finito não-determinístico para validação de palavras-chave em MiniPascal.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile keyword-afn.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <string.h>
+#include "../../../include/keyword-afn.h"
 
 int is_keyword_char(char c) {
     return (c >= 'a' && c <= 'z');

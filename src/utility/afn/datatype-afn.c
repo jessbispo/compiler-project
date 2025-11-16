@@ -1,7 +1,13 @@
+/** @brief Implementação das funções do módulo do autômato finito para os tipos de dados em MiniPascal.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile datatype-afn.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "../header/datatype-afn.h"
+#include "../../../include/datatype-afn.h"
 
 DatatypeState datatype_next_state(DatatypeState current_state, char caracter) {
     switch (current_state) {

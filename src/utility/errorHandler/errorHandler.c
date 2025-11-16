@@ -1,3 +1,9 @@
+/** @brief Implementação das funções do módulo ErrorHandler.
+ *  @details A documentação de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile errorHandler.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -53,7 +59,6 @@ int insertError(ErrorTable* table, const char* name, const char* description, Er
         return -1;
     }
 
-    /* Try to extract the exact line snippet from the source file, if available */
     if (filename && line > 0 && strcmp(filename, "<unknown>") != 0) {
         FILE *f = fopen(filename, "r");
         if (f) {
@@ -74,7 +79,6 @@ int insertError(ErrorTable* table, const char* name, const char* description, Er
     }
     if (!newError->snippet) newError->snippet = strdup("-");
 
-    // Handle collision using chaining
     if (table->errors[index]) {
         newError->next = table->errors[index];
     }

@@ -4,6 +4,16 @@
 #include "../include/symbolTable.h"
 #include "../include/errorHandler.h"
 
+/* Token type constants */
+#define TOKEN_IDENTIFIER    10
+#define TOKEN_KEYWORD       11
+#define TOKEN_LITERAL       12
+#define TOKEN_DATATYPE      13
+#define TOKEN_DELIMITER     14
+#define TOKEN_COMMENT       15
+#define TOKEN_EOF           0
+#define TOKEN_ERROR         0
+
 /** @brief Structure representing a token produced by the lexical analysis
  *
  * Fields:
@@ -18,6 +28,9 @@ typedef struct Token {
     char lexeme[64];
     int line;
 } Token;
+
+/* Macro for convenience - map .value to .lexeme for consistency */
+#define TOKEN_VALUE(t) ((t).lexeme)
 
 /** @brief Perform lexical analysis on an input C-style string.
  *

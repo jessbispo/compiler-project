@@ -1,8 +1,14 @@
+/** @brief Implementação do autômato finito não-determinístico para validação de declarações de delimitadores e tipos em MiniPascal.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile delimiter-afn.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
-#include "../header/delimiter-afn.h"
-#include "../header/datatype-afn.h"
+#include "../../../include/delimiter-afn.h"
+#include "../../../include/datatype-afn.h"
 
 DelimiterState delimiter_next_state(DelimiterState current_state, char character) {
     switch (current_state) {

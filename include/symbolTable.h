@@ -1,7 +1,12 @@
+/** @brief SymbolTable é um módulo responsável pela tabela de símbolos do compilador.
+ *  @details Este módulo implementa uma tabela de símbolos utilizando uma tabela hash com tratamento de colisões por encadeamento.
+ *  @author Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #ifndef SYMBOL_TABLE_H
 #define SYMBOL_TABLE_H
 
-#define HASH_TABLE_SIZE 211 // Número primo para melhor distribuição
+#define HASH_TABLE_SIZE 211
 
 /** @brief Estrutura da Tabela de Símbolos
  *  @property name Nome do Símbolo
@@ -75,5 +80,7 @@ void destroySymbolTable(SymbolTable **hash_table);
  *  @param hash_table Ponteiro para a Tabela Hash de Símbolos
  */
 void clearSymbolTable(SymbolTable **hash_table);
+
+char* getSymbolTable(SymbolTable **hash_table);
 
 #endif /* SYMBOL_TABLE_H */

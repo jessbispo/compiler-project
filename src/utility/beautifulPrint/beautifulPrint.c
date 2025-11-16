@@ -1,3 +1,9 @@
+/** @brief Implementação das funções do módulo BeautifulPrint.
+ *  @details A documentação completa de cada função está disponível no arquivo de cabeçalho correspondente.
+ *  @headerfile beautifulPrint.h
+ *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862)
+ */
+
 #include <stdio.h>
 #include "../../../include/beautifulPrint.h"
 #include "../../../include/symbolTable.h"
@@ -61,9 +67,9 @@ void printErrorTable(ErrorTable **error_table) {
 }
 
 void printSymbolTable(SymbolTable **hash_table) {
-        printf("\n%-12s | %-12s | %-10s | %-10s | %-8s | %-6s | %-12s | %-14s | %-12s | %-10s | %-5s\n",
+        printf("\n%-15s | %-15s | %-12s | %-12s | %-10s | %-8s | %-15s | %-18s | %-15s | %-12s | %-5s\n",
             "SYMBOL", "CATEGORY", "TYPE", "SCOPE", "ADDRESS", "SIZE", "PARAMETERS", "LITERAL_VALUE", "DECLARED_IN", "VISIBILITY", "LINE");
-        printf("---------------------------------------------------------------------------------------------------------------------------------------------\n");
+        printf("--------------------------------------------------------------------------------------------------------------------------------------------------------------------\n");
 
     if (!hash_table) {
         printf("Tabela de símbolos vazia.\n");
@@ -80,7 +86,7 @@ void printSymbolTable(SymbolTable **hash_table) {
                 snprintf(size_buf, sizeof(size_buf), "%d", current->size);
                 size_str = size_buf;
             }
-            printf("%-12s | %-12s | %-10s | %-10s | %-8s | %-6s | %-12s | %-14s | %-12s | %-10s | %-5d\n",
+            printf("%-15s | %-15s | %-12s | %-12s | %-10s | %-8s | %-15s | %-18s | %-15s | %-12s | %-5d\n",
                    current->name && current->name[0] ? current->name : "-",
                    current->category && current->category[0] ? current->category : "-",
                    current->type && current->type[0] ? current->type : "-",

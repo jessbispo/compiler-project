@@ -23,6 +23,8 @@ typedef struct ASTNode {
 ASTNode* createASTNode(const char *type, const char *value, int line);
 void astAddChild(ASTNode *parent, ASTNode *child);
 void freeAST(ASTNode *node);
+void printAST(ASTNode *node);
+void printASTToFile(ASTNode *node, const char *filepath);
 
 /**
  * @brief Structure to manage parser state
