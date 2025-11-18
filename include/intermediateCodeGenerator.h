@@ -153,4 +153,18 @@ void freeIntermediateCode(IntermediateCode *code);
  */
 const char* tacOpToString(TACOpType op);
 
+/**
+ * @brief Print intermediate code in sequential format (non-tabular)
+ * @param code Intermediate code to print
+ */
+void printIntermediateCodeSequential(IntermediateCode *code);
+
+/**
+ * @brief Write intermediate code to file in sequential format
+ * @param code Intermediate code
+ * @param filepath Path to output file
+ * @return 0 on success, -1 on failure
+ */
+int writeIntermediateCodeSequential(IntermediateCode *code, const char *filepath);
+
 #endif /* INTERMEDIATE_CODE_GENERATOR_H */

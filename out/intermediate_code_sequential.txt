@@ -1,0 +1,45 @@
+=== INTERMEDIATE CODE (TAC) ===
+
+
+PROC_START proc
+PROC_END proc
+    a = 1
+    t0 = a < 1
+    if_false t0 goto L0
+    a = 12
+    goto L1
+L0:
+L1:
+    a = 2
+    b = 10
+    c = 11
+    t1 = b + c
+    a = t1
+    d = true
+    e = false
+    f = true
+    write b
+    if_false d goto L2
+    a = 20
+    t2 = 10 * c
+    b = t2
+    t3 = a div b
+    c = t3
+    goto L3
+L2:
+L3:
+L4:
+    t4 = a > 1
+    if_false t4 goto L5
+    t5 = b > 10
+    if_false t5 goto L6
+    b = 2
+    goto L7
+L6:
+L7:
+    t6 = a - 1
+    a = t6
+    goto L4
+L5:
+
+=== END INTERMEDIATE CODE ===

@@ -198,9 +198,23 @@ int main(int argc, char *argv[]) {
 
     printMessage("código intermediário gerado com sucesso!", 1);
     
+    // ===== ALTERAÇÃO AQUI: FORMATO SEQUENCIAL =====
+    printf("\n");
+    printMessage("Formato Sequencial (Assembly-like):", 2);
+    printIntermediateCodeSequential(intermediateCode);
+    
+    // Salva em formato sequencial
+    createFile("out/intermediate_code_sequential.txt");
+    writeIntermediateCodeSequential(intermediateCode, "out/intermediate_code_sequential.txt");
+    
+    // OPCIONAL: Manter também o formato tabular
+    printf("\n");
+    printMessage("Formato Tabular (para referência):", 2);
     printIntermediateCode(intermediateCode);
-    createFile("out/intermediate_code.txt");
-    writeIntermediateCodeToFile(intermediateCode, "out/intermediate_code.txt");
+    
+    createFile("out/intermediate_code_table.txt");
+    writeIntermediateCodeToFile(intermediateCode, "out/intermediate_code_table.txt");
+    // ===== FIM DAS ALTERAÇÕES =====
 
     printDivisor();
 

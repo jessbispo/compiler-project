@@ -144,21 +144,6 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
     if (!node || !code) return NULL;
     if (!node->type) return NULL;
 
-        // DEBUG: Imprima o tipo do nó
-    printf("DEBUG: Processando nó tipo='%s', value='%s', children=%d\n",
-           node->type,
-           node->value ? node->value : "NULL",
-           node->child_count,
-           node->line);
-    // DEBUG: Imprima informações sobre cada filho
-    for (int i = 0; i < node->child_count; i++) {
-        if (node->children[i]) {
-            printf("  -> Filho[%d]: tipo='%s', value='%s'\n",
-                   i,
-                   node->children[i]->type ? node->children[i]->type : "NULL",
-                   node->children[i]->value ? node->children[i]->value : "NULL");
-        }
-    }
     /* Variable Declaration */
     if (strcmp(node->type, "VAR_DECL") == 0 || strcmp(node->type, "VARIABLE") == 0) {
         return NULL;
@@ -735,6 +720,310 @@ int writeIntermediateCodeToFile(IntermediateCode *code, const char *filepath) {
         }
     }
 
+    closeFile(file);
+    return 0;
+}
+/**
+ * @brief Print intermediate code in sequential format (non-tabular)
+ * @param code Intermediate code to print
+ */
+void printIntermediateCodeSequential(IntermediateCode *code) {
+    if (!code || code->instruction_count == 0) {
+        printf("No intermediate code generated.\n");
+        return;
+    }
+
+    printf("\n=== INTERMEDIATE CODE (TAC) ===\n\n");
+
+    for (int i = 0; i < code->instruction_count; i++) {
+        TACInstruction *instr = &code->instructions[i];
+        
+        switch (instr->op) {
+            case TAC_ASSIGN:
+                printf("    %s = %s\n", instr->result, instr->arg1);
+                break;
+                
+            case TAC_ADD:
+                printf("    %s = %s + %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_SUB:
+                printf("    %s = %s - %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_MUL:
+                printf("    %s = %s * %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_DIV:
+                printf("    %s = %s div %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_MOD:
+                printf("    %s = %s mod %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_LT:
+                printf("    %s = %s < %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_GT:
+                printf("    %s = %s > %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_LE:
+                printf("    %s = %s <= %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_GE:
+                printf("    %s = %s >= %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_EQ:
+                printf("    %s = %s == %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_NE:
+                printf("    %s = %s != %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_AND:
+                printf("    %s = %s and %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_OR:
+                printf("    %s = %s or %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_NOT:
+                printf("    %s = not %s\n", instr->result, instr->arg1);
+                break;
+                
+            case TAC_LABEL:
+                printf("%s:\n", instr->result);
+                break;
+                
+            case TAC_JUMP:
+                printf("    goto %s\n", instr->result);
+                break;
+                
+            case TAC_JUMP_IF_FALSE:
+                printf("    if_false %s goto %s\n", instr->arg1, instr->result);
+                break;
+                
+            case TAC_JUMP_IF_TRUE:
+                printf("    if_true %s goto %s\n", instr->arg1, instr->result);
+                break;
+                
+            case TAC_READ:
+                printf("    read %s\n", instr->result);
+                break;
+                
+            case TAC_WRITE:
+                printf("    write %s\n", instr->arg1);
+                break;
+                
+            case TAC_FUNCTION_START:
+                printf("\nPROC_START %s\n", instr->result);
+                break;
+                
+            case TAC_FUNCTION_END:
+                printf("PROC_END %s\n", instr->result);
+                break;
+                
+            case TAC_CALL:
+                printf("    call %s\n", instr->arg1);
+                if (instr->result) {
+                    printf("    %s = return_value\n", instr->result);
+                }
+                break;
+                
+            case TAC_PARAM:
+                printf("    param %s\n", instr->arg1);
+                break;
+                
+            case TAC_RETURN:
+                if (instr->result) {
+                    printf("    return %s\n", instr->result);
+                } else {
+                    printf("    return\n");
+                }
+                break;
+                
+            case TAC_ARRAY_ACCESS:
+                printf("    %s = %s[%s]\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            case TAC_ARRAY_ASSIGN:
+                printf("    %s[%s] = %s\n", instr->result, instr->arg1, instr->arg2);
+                break;
+                
+            default:
+                printf("    ; Unknown operation: %s\n", tacOpToString(instr->op));
+                break;
+        }
+    }
+    
+    printf("\n=== END INTERMEDIATE CODE ===\n\n");
+}
+
+/**
+ * @brief Write intermediate code to file in sequential format
+ * @param code Intermediate code
+ * @param filepath Path to output file
+ * @return 0 on success, -1 on failure
+ */
+int writeIntermediateCodeSequential(IntermediateCode *code, const char *filepath) {
+    if (!code || !filepath) {
+        return -1;
+    }
+
+    FILE *file = NULL;
+    if (openFile(&file, filepath, "w")) {
+        return -1;
+    }
+
+    if (!file) {
+        return -1;
+    }
+
+    fprintf(file, "=== INTERMEDIATE CODE (TAC) ===\n\n");
+
+    if (code->instruction_count == 0) {
+        fprintf(file, "No intermediate code generated.\n");
+    } else {
+        for (int i = 0; i < code->instruction_count; i++) {
+            TACInstruction *instr = &code->instructions[i];
+            
+            switch (instr->op) {
+                case TAC_ASSIGN:
+                    fprintf(file, "    %s = %s\n", instr->result, instr->arg1);
+                    break;
+                    
+                case TAC_ADD:
+                    fprintf(file, "    %s = %s + %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_SUB:
+                    fprintf(file, "    %s = %s - %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_MUL:
+                    fprintf(file, "    %s = %s * %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_DIV:
+                    fprintf(file, "    %s = %s div %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_MOD:
+                    fprintf(file, "    %s = %s mod %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_LT:
+                    fprintf(file, "    %s = %s < %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_GT:
+                    fprintf(file, "    %s = %s > %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_LE:
+                    fprintf(file, "    %s = %s <= %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_GE:
+                    fprintf(file, "    %s = %s >= %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_EQ:
+                    fprintf(file, "    %s = %s == %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_NE:
+                    fprintf(file, "    %s = %s != %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_AND:
+                    fprintf(file, "    %s = %s and %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_OR:
+                    fprintf(file, "    %s = %s or %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_NOT:
+                    fprintf(file, "    %s = not %s\n", instr->result, instr->arg1);
+                    break;
+                    
+                case TAC_LABEL:
+                    fprintf(file, "%s:\n", instr->result);
+                    break;
+                    
+                case TAC_JUMP:
+                    fprintf(file, "    goto %s\n", instr->result);
+                    break;
+                    
+                case TAC_JUMP_IF_FALSE:
+                    fprintf(file, "    if_false %s goto %s\n", instr->arg1, instr->result);
+                    break;
+                    
+                case TAC_JUMP_IF_TRUE:
+                    fprintf(file, "    if_true %s goto %s\n", instr->arg1, instr->result);
+                    break;
+                    
+                case TAC_READ:
+                    fprintf(file, "    read %s\n", instr->result);
+                    break;
+                    
+                case TAC_WRITE:
+                    fprintf(file, "    write %s\n", instr->arg1);
+                    break;
+                    
+                case TAC_FUNCTION_START:
+                    fprintf(file, "\nPROC_START %s\n", instr->result);
+                    break;
+                    
+                case TAC_FUNCTION_END:
+                    fprintf(file, "PROC_END %s\n", instr->result);
+                    break;
+                    
+                case TAC_CALL:
+                    fprintf(file, "    call %s\n", instr->arg1);
+                    if (instr->result) {
+                        fprintf(file, "    %s = return_value\n", instr->result);
+                    }
+                    break;
+                    
+                case TAC_PARAM:
+                    fprintf(file, "    param %s\n", instr->arg1);
+                    break;
+                    
+                case TAC_RETURN:
+                    if (instr->result) {
+                        fprintf(file, "    return %s\n", instr->result);
+                    } else {
+                        fprintf(file, "    return\n");
+                    }
+                    break;
+                    
+                case TAC_ARRAY_ACCESS:
+                    fprintf(file, "    %s = %s[%s]\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                case TAC_ARRAY_ASSIGN:
+                    fprintf(file, "    %s[%s] = %s\n", instr->result, instr->arg1, instr->arg2);
+                    break;
+                    
+                default:
+                    fprintf(file, "    ; Unknown operation: %s\n", tacOpToString(instr->op));
+                    break;
+            }
+        }
+    }
+
+    fprintf(file, "\n=== END INTERMEDIATE CODE ===\n");
+    
     closeFile(file);
     return 0;
 }

@@ -1,0 +1,8 @@
+program simples;
+var x, y, z : integer;
+begin
+    x := 5;
+    y := 10;
+    z := x + y;
+    write(z);
+end.
