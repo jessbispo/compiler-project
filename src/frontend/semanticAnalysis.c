@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
-
+#include <ctype.h>  
 #include "syntacticAnalysis.h"
 #include "symbolTable.h"
 #include "errorHandler.h"
@@ -23,14 +23,10 @@ static void reportError(ErrorTable *errtab, int line, const char *filename, cons
 	insertError(errtab, namebuf, buf, SEMANTIC_ERROR, line, file_name);
 }
 
-/* 
- * Returns static string like "integer", "real", "boolean", "unknown" ou "type_error"
- */
 static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab) {
     if (!node) return "unknown";
     if (!node->type) return "unknown";
 
-    /* Handle explicit literal-type nodes first */
     if (node->value) {
         if (strcmp(node->type, "INT_LITERAL") == 0) return "integer";
         if (strcmp(node->type, "REAL_LITERAL") == 0) return "real";
@@ -103,13 +99,10 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
     }
 
     if (node->type && strcmp(node->type, "VALUE") == 0 && node->value) {
-        // ... código existente ...
     }
     
-    /* lida com nós LITERAL */
     if (node->type && strcmp(node->type, "LITERAL") == 0 && node->value) {
         const char *v = node->value;
-        /* boolean literal */
         if (strcasecmp(v, "true") == 0 || strcasecmp(v, "false") == 0) return "boolean";
 
      
@@ -134,7 +127,6 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
         return s->type ? s->type : "unknown";
     }
 
-    /* Generic fallback for other binary operations */
     if (node->child_count >= 2) {
         const char *lt = inferExpressionType(node->children[0], symtab, errtab);
         const char *rt = inferExpressionType(node->children[1], symtab, errtab);
@@ -152,7 +144,6 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 
 	if (node->type && strcmp(node->type, "VAR_DECL") == 0) {
 		if (node->child_count >= 1) {
-			/* looking for node TYPE */
 			const char *found_type = NULL;
 			for (int i = 0; i < node->child_count; ++i) {
 				if (node->children[i] && node->children[i]->type && strcmp(node->children[i]->type, "TYPE") == 0) {
@@ -169,10 +160,7 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 					const char *type = found_type ? found_type : "-";
 					SymbolTable *existing = searchSymbol(symtab, name);
 					if (existing) {
-						/* Se o símbolo existe mas foi inserido pela análise léxica como
-						 * um placeholder (categoria "identifier" ou valor padrão "-"),
-						 * atualizamos seus campos em vez de reportar redeclaração.
-						 */
+
 						if ((existing->category && strcmp(existing->category, "identifier") == 0) ||
 							(existing->category && strcmp(existing->category, "-") == 0)) {
 							if (existing->category) free(existing->category);
@@ -194,7 +182,6 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 		}
 	}
 
-	/* Atribuições: verificar compatibilidade de tipos */
 	if (node->type && strstr(node->type, "ASSIGN") != NULL) {
 		if (node->child_count >= 2 && node->children[0] && node->children[1]) {
 			ASTNode *lhs = node->children[0];
@@ -202,7 +189,6 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 			const char *lt = inferExpressionType(lhs, symtab, errtab);
 			const char *rt = inferExpressionType(rhs, symtab, errtab);
 			if (strcmp(lt, "unknown") == 0 || strcmp(rt, "unknown") == 0) {
-				/* já reportado por inferExpressionType */
 			} else if (strcmp(lt, "type_error") == 0 || strcmp(rt, "type_error") == 0) {
 				reportError(errtab, node->line, filename, "Erro de tipo em expressão (linha %d).", node->line);
 			} else if (strcmp(lt, rt) != 0) {
@@ -211,16 +197,13 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 		}
 	}
 
-	/* Uso de identificador isolado */
 	if (node->type && strstr(node->type, "IDENTIFIER") != NULL) {
 		if (!searchSymbol(symtab, node->value)) {
 			reportError(errtab, node->line, filename, "Uso de identificador '%s' não declarado.", node->value ? node->value : "<null>");
 		}
 	}
 
-	/* Verificar chamadas de funções (checar existência e quantidade/rótulos de parâmetros)
-	 * Este projeto não tem um formato padronizado de nó CALL — implementamos um tratamento genérico:
-	 */
+	
 	if (node->type && (strstr(node->type, "CALL") != NULL || strstr(node->type, "FUNC_CALL") != NULL)) {
 		ASTNode *nameNode = (node->child_count > 0) ? node->children[0] : NULL;
 		if (nameNode && nameNode->value) {
@@ -228,10 +211,7 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 			if (!s) {
 				reportError(errtab, node->line, filename, "Chamada de função/procedimento '%s' não declarada.", nameNode->value);
 			} else {
-				/* Se a tabela de símbolos armazenar parâmetros, poderíamos comparar aqui.
-				 * A coluna parameters na SymbolTable existe, mas o formato não é padronizado no projeto,
-				 * então apenas deixamos o gancho para futuras verificações.
-				 */
+
 			}
 		}
 	}
@@ -247,6 +227,6 @@ int semanticAnalysis(ASTNode *root, SymbolTable **symtab, ErrorTable *errtab, co
 	const char *globalScope = "global";
 	checkNode(root, symtab, errtab, globalScope, filename);
 
-	if (!errtab) return 0; /* nada para checar */
+	if (!errtab) return 0; 
 	return (errtab->count > 0) ? 1 : 0;
 }

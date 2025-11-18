@@ -728,7 +728,6 @@ int writeIntermediateCodeToFile(IntermediateCode *code, const char *filepath) {
     return 0;
 }
 
-// Imprime o código intermediário em formato sequencial (tipo assembly)
 void printIntermediateCodeSequential(IntermediateCode *code) {
     if (!code || code->instruction_count == 0) {
         printf("No intermediate code generated.\n");

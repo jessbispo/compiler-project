@@ -21,7 +21,6 @@ int is_keyword(const char *input);
 #define TOKEN_LOGICAL       4
 #define TOKEN_ERROR         0
 
-/* Helper macro for safe realloc */
 #define SAFE_REALLOC(ptr, size) do { \
     void *tmp = realloc(ptr, size); \
     if (!tmp && size > 0) { \
@@ -38,14 +37,14 @@ Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **sy
 	const char *file_name = filename ? filename : "<unknown>";
 	size_t cap = 64;
 	size_t count = 0;
-	int current_line = 1;  // Initialize line counter
+	int current_line = 1; 
 	Token *tokens = (Token*)malloc(sizeof(Token) * cap);
 	if (!tokens) return NULL;
 
 	const char *p = input;
 	while (*p != '\0') {
 		while (isspace((unsigned char)*p)) {
-			if (*p == '\n') current_line++;  // Increment line counter on newline
+			if (*p == '\n') current_line++;  
 			p++;
 		}
 		if (*p == '\0') break;
@@ -63,9 +62,7 @@ Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **sy
 			int is_kw = is_keyword(buf);
 			int is_dt = datatype_afn(buf);
 
-			/* Fallback keyword list (case-insensitive) for keywords not
-			 * recognized by the AFN or to make matching robust. We also
-			 * treat boolean literals separately. */
+
 			char lowerbuf[64];
 			for (size_t ii = 0; ii <= bi && ii < sizeof(lowerbuf)-1; ++ii) {
 				lowerbuf[ii] = (char)tolower((unsigned char)buf[ii]);
@@ -82,26 +79,22 @@ Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **sy
 				}
 			}
 
-			/* boolean literals should not be inserted as identifiers */
 			int is_boolean_literal = (strcmp(lowerbuf, "true") == 0 || strcmp(lowerbuf, "false") == 0);
 
 			if (count + 2 > cap) { cap *= 2; SAFE_REALLOC(tokens, sizeof(Token) * cap); }
 			Token t;
-			t.line = current_line;  // Set the line number
+			t.line = current_line;  
 			if (is_kw) {
-				t.type = 11; /* keyword */
+				t.type = 11; 
 			} else if (is_dt) {
-				t.type = 13; /* datatype */
+				t.type = 13; 
 			} else {
-				t.type = 10; /* identifier */
+				t.type = 10; 
 			}
 			strncpy(t.lexeme, buf, sizeof(t.lexeme)-1); t.lexeme[sizeof(t.lexeme)-1] = '\0';
 			tokens[count++] = t;
 
-			/* Insert into symbol table: datatypes and identifiers (but not general keywords)
-			 * - datatypes should be stored with category "datatype"
-			 * - identifiers with category "identifier"
-			 */
+
 			if (!is_boolean_literal) {
 				if (searchSymbol(symtab, buf) == NULL) {
 					if (is_kw) {
@@ -186,9 +179,6 @@ Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **sy
 			tokens[count++] = t; p++; continue;
 		}
 
-		/* Recognize simple delimiters as tokens so they are not treated as unknowns.
-		 * This must be after operator checks so ':=' is handled as assignment.
-		 */
 		if (strchr("(),;:.", buf[0])) {
 			if (count + 2 > cap) { cap *= 2; SAFE_REALLOC(tokens, sizeof(Token) * cap); }
 			Token t; t.type = 14; /* delimiter */
@@ -198,7 +188,6 @@ Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **sy
 		}
 
 		bi = 0;
-		/* Stop if we reach end of input or encounter space/alnum */
 		while (bi < (int)sizeof(buf)-1 && *p != '\0' && !isspace((unsigned char)*p) && !isalnum((unsigned char)*p)) {
 			buf[bi++] = *p; p++;
 		}
@@ -207,7 +196,7 @@ Token* lexicalAnalysis(const char *input, const char *filename, SymbolTable **sy
 		if (count + 2 > cap) { cap *= 2; SAFE_REALLOC(tokens, sizeof(Token) * cap); }
 		Token t;
 		t.type = 0;
-		t.line = current_line;  // Set the line number
+		t.line = current_line; 
 		strncpy(t.lexeme, buf, sizeof(t.lexeme)-1);
 		t.lexeme[sizeof(t.lexeme)-1] = '\0';
 		tokens[count++] = t;

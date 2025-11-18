@@ -161,10 +161,7 @@ static ASTNode* parseTerm(Parser *parser, int *index) {
     return NULL;
 }
 
-/**
- * @brief Parse an expression (handles binary operators)
- * Simplified: left-to-right evaluation without precedence
- */
+
 static ASTNode* parseExpression(Parser *parser, int *index) {
     ASTNode *left = parseTerm(parser, index);
     if (!left) return NULL;
@@ -177,23 +174,19 @@ static ASTNode* parseExpression(Parser *parser, int *index) {
         
         Token *op = &parser->tokens[*index];
         
-        /* Check if it's an operator */
         const char *op_type = NULL;
         
-        /* Arithmetic operators (type 1) */
         if (op->type == 1) {
             if (strcmp(op->lexeme, "+") == 0) op_type = "PLUS";
             else if (strcmp(op->lexeme, "-") == 0) op_type = "MINUS";
             else if (strcmp(op->lexeme, "*") == 0) op_type = "TIMES";
             else if (strcmp(op->lexeme, "/") == 0) op_type = "DIVIDE";
         } 
-        /* div and mod keywords */
         else if (op->type == 11 && strcmp(op->lexeme, "div") == 0) {
             op_type = "DIV_OP";
         } else if (op->type == 11 && strcmp(op->lexeme, "mod") == 0) {
             op_type = "MOD_OP";
         } 
-        /* Relational operators (type 2) */
         else if (op->type == 2) {
             if (strcmp(op->lexeme, "<") == 0) op_type = "LT";
             else if (strcmp(op->lexeme, ">") == 0) op_type = "GT";
@@ -202,27 +195,25 @@ static ASTNode* parseExpression(Parser *parser, int *index) {
             else if (strcmp(op->lexeme, "=") == 0) op_type = "EQ";
             else if (strcmp(op->lexeme, "<>") == 0) op_type = "NE";
         } 
-        /* Logical operators (type 4) */
+       
         else if (op->type == 4) {
             if (strcmp(op->lexeme, "and") == 0) op_type = "AND";
             else if (strcmp(op->lexeme, "or") == 0) op_type = "OR";
         }
         
-        if (!op_type) break; /* Not an operator, stop */
+        if (!op_type) break;
         
-        (*index)++; /* Move past operator */
+        (*index)++;
         
         ASTNode *right = parseTerm(parser, index);
         if (!right) {
-            /* Error: expected term after operator */
             break;
         }
         
-        /* Create operator node with left and right as children */
         ASTNode *op_node = createASTNode(op_type, NULL, op->line);
         if (op_node) {
             if (op_node->line <= 0 || op_node->line > 10000) {
-                op_node->line = left->line; /* Use line from left operand as fallback */
+                op_node->line = left->line; 
             }
             astAddChild(op_node, left);
             astAddChild(op_node, right);
@@ -233,11 +224,8 @@ static ASTNode* parseExpression(Parser *parser, int *index) {
     return left;
 }
 
-/**
- * @brief Parse a condition expression (used in if/while)
- */
+
 static ASTNode* parseCondition(Parser *parser, int *index) {
-    /* Skip opening parenthesis if present (Type 14 = DELIMITER) */
     if (parser->tokens[*index].type == 14 &&
         strcmp(parser->tokens[*index].lexeme, "(") == 0) {
         (*index)++;
@@ -245,7 +233,6 @@ static ASTNode* parseCondition(Parser *parser, int *index) {
     
     ASTNode *condition = parseExpression(parser, index);
     
-    /* Skip closing parenthesis if present */
     if (parser->tokens[*index].type == 14 &&
         strcmp(parser->tokens[*index].lexeme, ")") == 0) {
         (*index)++;
@@ -254,18 +241,11 @@ static ASTNode* parseCondition(Parser *parser, int *index) {
     return condition;
 }
 
-/**
- * @brief Parse a block of statements recursively
- */
 static ASTNode* parseBlock(Parser *parser, int *index);
 
-/**
- * @brief Parse a single statement
- */
 static ASTNode* parseStatement(Parser *parser, int *index) {
     Token *stmt_token = &parser->tokens[*index];
     
-    /* Assignment statement (Type 10 = IDENTIFIER) */
     if (stmt_token->type == 10) {
         ASTNode *assign = createASTNode("ASSIGN", NULL, stmt_token->line);
         if (!assign) return NULL;
@@ -275,32 +255,27 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         
         (*index)++;
         
-        /* Skip := operator - can be tokenized as ":=" (type 3) or ":" + "=" separately */
         int found_assign = 0;
         
-        /* Check for ":=" as single token (Type 3 = ASSIGNMENT) */
         if (parser->tokens[*index].type == 3 ||
             (parser->tokens[*index].type != 0 && 
              strcmp(parser->tokens[*index].lexeme, ":=") == 0)) {
             (*index)++;
             found_assign = 1;
         }
-        /* Check for ":" followed by "=" as two tokens */
         else if (parser->tokens[*index].type == 14 && 
                  strcmp(parser->tokens[*index].lexeme, ":") == 0 &&
                  parser->tokens[*index + 1].type == 2 &&
                  strcmp(parser->tokens[*index + 1].lexeme, "=") == 0) {
-            (*index) += 2; /* Skip both : and = */
+            (*index) += 2; 
             found_assign = 1;
         }
         
         if (found_assign) {
-            /* Parse right-hand side expression */
             ASTNode *rhs = parseExpression(parser, index);
             if (rhs) astAddChild(assign, rhs);
         }
         
-        /* Skip semicolon (Type 14 = DELIMITER) */
         if (parser->tokens[*index].type == 14 &&
             strcmp(parser->tokens[*index].lexeme, ";") == 0) {
             (*index)++;
@@ -309,24 +284,21 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         return assign;
     }
     
-    /* If statement (Type 11 = KEYWORD) */
     if (stmt_token->type == 11 && strcmp(stmt_token->lexeme, "if") == 0) {
         (*index)++;
         
         ASTNode *ifNode = createASTNode("IF", NULL, stmt_token->line);
         if (!ifNode) return NULL;
         
-        /* Parse condition */
         ASTNode *condition = parseCondition(parser, index);
         if (condition) astAddChild(ifNode, condition);
         
-        /* Skip 'then' keyword */
+
         if (parser->tokens[*index].type == 11 &&
             strcmp(parser->tokens[*index].lexeme, "then") == 0) {
             (*index)++;
         }
         
-        /* Parse then-block (could be a single statement or begin...end) */
         ASTNode *thenBlock = NULL;
         if (parser->tokens[*index].type == 11 &&
             strcmp(parser->tokens[*index].lexeme, "begin") == 0) {
@@ -336,7 +308,7 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         }
         if (thenBlock) astAddChild(ifNode, thenBlock);
         
-        /* Check for else */
+ 
         if (parser->tokens[*index].type == 11 &&
             strcmp(parser->tokens[*index].lexeme, "else") == 0) {
             (*index)++;
@@ -354,24 +326,20 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         return ifNode;
     }
     
-    /* While loop */
     if (stmt_token->type == 11 && strcmp(stmt_token->lexeme, "while") == 0) {
         (*index)++;
         
         ASTNode *whileNode = createASTNode("WHILE", NULL, stmt_token->line);
         if (!whileNode) return NULL;
         
-        /* Parse condition */
         ASTNode *condition = parseCondition(parser, index);
         if (condition) astAddChild(whileNode, condition);
         
-        /* Skip 'do' keyword */
         if (parser->tokens[*index].type == 11 &&
             strcmp(parser->tokens[*index].lexeme, "do") == 0) {
             (*index)++;
         }
         
-        /* Parse body */
         ASTNode *body = NULL;
         if (parser->tokens[*index].type == 11 &&
             strcmp(parser->tokens[*index].lexeme, "begin") == 0) {
@@ -384,14 +352,12 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         return whileNode;
     }
     
-    /* Write statement */
     if (stmt_token->type == 11 && strcmp(stmt_token->lexeme, "write") == 0) {
         ASTNode *writeNode = createASTNode("WRITE", NULL, stmt_token->line);
         if (!writeNode) return NULL;
         
         (*index)++;
         
-        /* Skip '(' */
         if (parser->tokens[*index].type == 14 &&
             strcmp(parser->tokens[*index].lexeme, "(") == 0) {
             (*index)++;
@@ -405,14 +371,12 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
                 (*index)++;
             }
             
-            /* Skip ')' */
             if (parser->tokens[*index].type == 14 &&
                 strcmp(parser->tokens[*index].lexeme, ")") == 0) {
                 (*index)++;
             }
         }
         
-        /* Skip semicolon */
         if (parser->tokens[*index].type == 14 &&
             strcmp(parser->tokens[*index].lexeme, ";") == 0) {
             (*index)++;
@@ -421,14 +385,13 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         return writeNode;
     }
     
-    /* Read statement */
     if (stmt_token->type == 11 && strcmp(stmt_token->lexeme, "read") == 0) {
         ASTNode *readNode = createASTNode("READ", NULL, stmt_token->line);
         if (!readNode) return NULL;
         
         (*index)++;
         
-        /* Skip '(' */
+
         if (parser->tokens[*index].type == 14 &&
             strcmp(parser->tokens[*index].lexeme, "(") == 0) {
             (*index)++;
@@ -441,14 +404,12 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
                 (*index)++;
             }
             
-            /* Skip ')' */
             if (parser->tokens[*index].type == 14 &&
                 strcmp(parser->tokens[*index].lexeme, ")") == 0) {
                 (*index)++;
             }
         }
         
-        /* Skip semicolon */
         if (parser->tokens[*index].type == 14 &&
             strcmp(parser->tokens[*index].lexeme, ";") == 0) {
             (*index)++;
@@ -457,14 +418,10 @@ static ASTNode* parseStatement(Parser *parser, int *index) {
         return readNode;
     }
     
-    /* Unknown statement - skip token */
     (*index)++;
     return NULL;
 }
 
-/**
- * @brief Parse a block of statements (begin...end)
- */
 static ASTNode* parseBlock(Parser *parser, int *index) {
     if (parser->tokens[*index].type != 11 ||
         strcmp(parser->tokens[*index].lexeme, "begin") != 0) {
@@ -477,7 +434,6 @@ static ASTNode* parseBlock(Parser *parser, int *index) {
     ASTNode *block = createASTNode("BLOCK", NULL, begin_token->line);
     if (!block) return NULL;
     
-    /* Parse statements until 'end' (Type 0 = EOF, Type 11 = KEYWORD) */
     while (parser->tokens[*index].type != 0 &&
            !(parser->tokens[*index].type == 11 &&
              strcmp(parser->tokens[*index].lexeme, "end") == 0)) {
@@ -486,13 +442,11 @@ static ASTNode* parseBlock(Parser *parser, int *index) {
         if (stmt) astAddChild(block, stmt);
     }
     
-    /* Skip 'end' keyword */
     if (parser->tokens[*index].type == 11 &&
         strcmp(parser->tokens[*index].lexeme, "end") == 0) {
         (*index)++;
     }
     
-    /* Skip optional semicolon after end */
     if (parser->tokens[*index].type == 14 &&
         strcmp(parser->tokens[*index].lexeme, ";") == 0) {
         (*index)++;
@@ -512,18 +466,14 @@ int syntacticAnalysis(Parser *parser) {
 
     int i = 0;
     
-    /* Skip until 'program' keyword (Type 0 = EOF, Type 11 = KEYWORD) */
     while (parser->tokens[i].type != 0 && 
            !(parser->tokens[i].type == 11 &&
              strcmp(parser->tokens[i].lexeme, "program") == 0)) {
         i++;
     }
     
-    /* Parse program sections */
     while (parser->tokens[i].type != 0) {
         Token *current = &parser->tokens[i];
-        
-        /* Variable declaration */
         if (current->type == 11 && strcmp(current->lexeme, "var") == 0) {
             ASTNode *varDecl = createASTNode("VAR_DECL", NULL, current->line);
             if (varDecl) {
@@ -554,7 +504,6 @@ int syntacticAnalysis(Parser *parser) {
             }
         }
         
-        /* Procedure declaration */
         else if (current->type == 11 && strcmp(current->lexeme, "procedure") == 0) {
             i++;
             ASTNode *procDecl = createASTNode("PROCEDURE", NULL, current->line);
@@ -567,7 +516,6 @@ int syntacticAnalysis(Parser *parser) {
             astAddChild(parser->root, procDecl);
         }
         
-        /* Function declaration */
         else if (current->type == 11 && strcmp(current->lexeme, "function") == 0) {
             i++;
             ASTNode *funcDecl = createASTNode("FUNCTION", NULL, current->line);
@@ -580,13 +528,12 @@ int syntacticAnalysis(Parser *parser) {
             astAddChild(parser->root, funcDecl);
         }
         
-        /* Begin block - use new recursive parser */
         else if (current->type == 11 && strcmp(current->lexeme, "begin") == 0) {
             ASTNode *block = parseBlock(parser, &i);
             if (block) {
                 astAddChild(parser->root, block);
             }
-            continue; /* parseBlock already advanced i */
+            continue; 
         }
         
         i++;
