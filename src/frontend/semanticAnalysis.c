@@ -23,8 +23,8 @@ static void reportError(ErrorTable *errtab, int line, const char *filename, cons
 	insertError(errtab, namebuf, buf, SEMANTIC_ERROR, line, file_name);
 }
 
-/* Inferir tipo de expressão de forma simples: procura literais e identificadores
- * Retorna string estática como "integer", "real", "boolean", "unknown" ou "type_error"
+/* 
+ * Returns static string like "integer", "real", "boolean", "unknown" ou "type_error"
  */
 static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab) {
     if (!node) return "unknown";
@@ -37,18 +37,15 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
         if (strcmp(node->type, "BOOL_LITERAL") == 0) return "boolean";
     }
 
-    /* Handle operators explicitly */
     if (strcmp(node->type, "PLUS") == 0 || strcmp(node->type, "MINUS") == 0 ||
         strcmp(node->type, "TIMES") == 0 || strcmp(node->type, "DIVIDE") == 0 ||
         strcmp(node->type, "DIV_OP") == 0 || strcmp(node->type, "MOD_OP") == 0) {
-        /* Arithmetic operators: infer type from operands */
         if (node->child_count >= 2) {
             const char *lt = inferExpressionType(node->children[0], symtab, errtab);
             const char *rt = inferExpressionType(node->children[1], symtab, errtab);
             if (!lt || !rt) return "unknown";
             if (strcmp(lt, "unknown") == 0 || strcmp(rt, "unknown") == 0) return "unknown";
             
-            /* Both operands must be numeric */
             int left_numeric = (strcmp(lt, "integer") == 0 || strcmp(lt, "real") == 0);
             int right_numeric = (strcmp(rt, "integer") == 0 || strcmp(rt, "real") == 0);
             
@@ -56,7 +53,6 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
                 return "type_error";
             }
             
-            /* If either is real, result is real; otherwise integer */
             if (strcmp(lt, "real") == 0 || strcmp(rt, "real") == 0) {
                 return "real";
             }
@@ -65,17 +61,14 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
         return "unknown";
     }
     
-    /* Relational operators: return boolean */
     if (strcmp(node->type, "LT") == 0 || strcmp(node->type, "GT") == 0 ||
         strcmp(node->type, "LE") == 0 || strcmp(node->type, "GE") == 0 ||
         strcmp(node->type, "EQ") == 0 || strcmp(node->type, "NE") == 0) {
-        /* Just verify operands are valid, result is always boolean */
         if (node->child_count >= 2) {
             const char *lt = inferExpressionType(node->children[0], symtab, errtab);
             const char *rt = inferExpressionType(node->children[1], symtab, errtab);
             if (!lt || !rt) return "unknown";
             if (strcmp(lt, "unknown") == 0 || strcmp(rt, "unknown") == 0) return "unknown";
-            /* Operands should be comparable (same type or both numeric) */
             if (strcmp(lt, rt) != 0) {
                 int left_numeric = (strcmp(lt, "integer") == 0 || strcmp(lt, "real") == 0);
                 int right_numeric = (strcmp(rt, "integer") == 0 || strcmp(rt, "real") == 0);
@@ -87,7 +80,6 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
         return "boolean";
     }
     
-    /* Logical operators: operands and result are boolean */
     if (strcmp(node->type, "AND") == 0 || strcmp(node->type, "OR") == 0) {
         if (node->child_count >= 2) {
             const char *lt = inferExpressionType(node->children[0], symtab, errtab);
@@ -110,18 +102,17 @@ static const char* inferExpressionType(ASTNode *node, SymbolTable **symtab, Erro
         return "boolean";
     }
 
-    /* The parser currently emits generic VALUE nodes for literals and identifiers */
     if (node->type && strcmp(node->type, "VALUE") == 0 && node->value) {
         // ... código existente ...
     }
     
-    /* Handle LITERAL nodes */
+    /* lida com nós LITERAL */
     if (node->type && strcmp(node->type, "LITERAL") == 0 && node->value) {
         const char *v = node->value;
         /* boolean literal */
         if (strcasecmp(v, "true") == 0 || strcasecmp(v, "false") == 0) return "boolean";
 
-        /* detect numeric: integer or real */
+     
         int is_int = 1;
         int is_real = 0;
         for (int i = 0; v[i] != '\0'; ++i) {
@@ -159,11 +150,9 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 	if (!node) return;
 	if (!node->type) return;
 
-	/* Declarações variáveis/proc/func: detectar redeclaração e inserir símbolo
-	 * Suporte para VAR_DECL contendo múltiplos IDENTIFIERs e um nó TYPE. */
 	if (node->type && strcmp(node->type, "VAR_DECL") == 0) {
 		if (node->child_count >= 1) {
-			/* procurar nó TYPE entre os filhos */
+			/* looking for node TYPE */
 			const char *found_type = NULL;
 			for (int i = 0; i < node->child_count; ++i) {
 				if (node->children[i] && node->children[i]->type && strcmp(node->children[i]->type, "TYPE") == 0) {
@@ -172,8 +161,7 @@ static void checkNode(ASTNode *node, SymbolTable **symtab, ErrorTable *errtab, c
 				}
 			}
 
-			/* Para cada IDENTIFIER filho, inserir/atualizar símbolo usando found_type */
-			for (int i = 0; i < node->child_count; ++i) {
+            for (int i = 0; i < node->child_count; ++i) {
 				ASTNode *child = node->children[i];
 				if (!child || !child->type) continue;
 				if (strcmp(child->type, "IDENTIFIER") == 0) {

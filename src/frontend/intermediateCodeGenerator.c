@@ -9,38 +9,30 @@
 #include "beautifulPrint.h"
 #include "fileHandler.h"
 
-/* Global counters for temporary variables and labels */
+// Contadores globais pra gerar nomes únicos de temporárias e labels
 static int global_temp_counter = 0;
 static int global_label_counter = 0;
 
-/**
- * @brief Generate a unique temporary variable name
- * @return Dynamically allocated string with temporary variable name
- */
+// Gera uma variável temporária única (t0, t1, t2...)
 static char* generateTempVar() {
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "t%d", global_temp_counter++);
     return strdup(buffer);
 }
 
-/**
- * @brief Generate a unique label name
- * @return Dynamically allocated string with label name
- */
+// Gera um label único (L0, L1, L2...)
 static char* generateLabel() {
     char buffer[32];
     snprintf(buffer, sizeof(buffer), "L%d", global_label_counter++);
     return strdup(buffer);
 }
 
-/**
- * @brief Create and initialize intermediate code structure
- * @return Pointer to initialized IntermediateCode
- */
+// Cria a estrutura que vai guardar todas as instruções de código intermediário
 IntermediateCode* createIntermediateCode() {
     IntermediateCode *code = (IntermediateCode *)malloc(sizeof(IntermediateCode));
     if (!code) return NULL;
 
+    // Começa com espaço pra 256 instruções
     code->instruction_capacity = 256;
     code->instructions = (TACInstruction *)malloc(sizeof(TACInstruction) * code->instruction_capacity);
     
@@ -56,20 +48,12 @@ IntermediateCode* createIntermediateCode() {
     return code;
 }
 
-/**
- * @brief Add a TAC instruction to the code with reallocation if necessary
- * @param code Intermediate code structure
- * @param op Operation type
- * @param result Destination variable
- * @param arg1 First operand
- * @param arg2 Second operand
- * @param line Source line number
- */
+// Adiciona uma instrução TAC na lista (realoca se necessário)
 void addTACInstruction(IntermediateCode *code, TACOpType op, const char *result,
                        const char *arg1, const char *arg2, int line) {
     if (!code) return;
 
-    /* Reallocate if necessary */
+    // Se encheu, dobra o tamanho
     if (code->instruction_count >= code->instruction_capacity) {
         code->instruction_capacity *= 2;
         TACInstruction *new_instructions = (TACInstruction *)realloc(code->instructions,
@@ -80,6 +64,7 @@ void addTACInstruction(IntermediateCode *code, TACOpType op, const char *result,
         code->instructions = new_instructions;
     }
 
+    // Adiciona a instrução
     TACInstruction *instr = &code->instructions[code->instruction_count];
     instr->op = op;
     instr->result = result ? strdup(result) : NULL;
@@ -90,11 +75,7 @@ void addTACInstruction(IntermediateCode *code, TACOpType op, const char *result,
     code->instruction_count++;
 }
 
-/**
- * @brief Convert TAC operation type to string representation
- * @param op Operation type
- * @return String representation of operation
- */
+// Converte o tipo de operação TAC pra string (pra debug e impressão)
 const char* tacOpToString(TACOpType op) {
     switch (op) {
         case TAC_ASSIGN:           return "ASSIGN";
@@ -130,39 +111,31 @@ const char* tacOpToString(TACOpType op) {
     }
 }
 
-
-/**
- * @brief Process an AST node and generate TAC instructions
- * @param node AST node to process
- * @param code Intermediate code structure
- * @param symtab Symbol table
- * @param errtab Error table
- * @return Name of the temporary/variable holding the result (must be freed by caller)
- */
+// Processa um nó da AST e gera as instruções TAC correspondentes
+// Retorna o nome da variável/temporária que tem o resultado (precisa dar free depois)
 static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
                                 SymbolTable **symtab, ErrorTable *errtab) {
     if (!node || !code) return NULL;
     if (!node->type) return NULL;
 
-    /* Variable Declaration */
+    // Declaração de variável - não gera código, só ignora
     if (strcmp(node->type, "VAR_DECL") == 0 || strcmp(node->type, "VARIABLE") == 0) {
         return NULL;
     }
 
-    /* Assignment Statement */
-   
+    // Atribuição (x := 5)
     if (strcmp(node->type, "ASSIGN") == 0 || strcmp(node->type, "ASSIGNMENT") == 0) {
         if (node->child_count >= 2) {
-            ASTNode *lhs = node->children[0];
-            ASTNode *rhs = node->children[1];
+            ASTNode *lhs = node->children[0];  // Variável que recebe
+            ASTNode *rhs = node->children[1];  // Expressão do lado direito
             
             const char *lhs_name = lhs->value ? lhs->value : "unknown";
             
-            // Recursively evaluate the right-hand side expression
+            // Avalia o lado direito recursivamente
             char *rhs_result = generateCodeForNode(rhs, code, symtab, errtab);
             
             if (rhs_result) {
-                // Assignment: lhs = rhs_result
+                // Gera: lhs = rhs_result
                 addTACInstruction(code, TAC_ASSIGN, lhs_name, rhs_result, NULL, node->line);
                 free(rhs_result);
             }
@@ -170,7 +143,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Arithmetic Operations */
+    // Operação de soma (a + b)
     if (strcmp(node->type, "PLUS") == 0 || strcmp(node->type, "ADD_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -180,6 +153,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
             const char *op1 = arg1 ? arg1 : "0";
             const char *op2 = arg2 ? arg2 : "0";
             
+            // Gera: result = op1 + op2
             addTACInstruction(code, TAC_ADD, result, op1, op2, node->line);
             
             if (arg1) free(arg1);
@@ -190,6 +164,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Operação de subtração (a - b)
     if (strcmp(node->type, "MINUS") == 0 || strcmp(node->type, "SUB_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -209,6 +184,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Operação de multiplicação (a * b)
     if (strcmp(node->type, "TIMES") == 0 || strcmp(node->type, "MUL_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -228,6 +204,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Operação de divisão (a / b ou a div b)
     if (strcmp(node->type, "DIVIDE") == 0 || strcmp(node->type, "DIV_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -247,6 +224,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Operação módulo (a mod b)
     if (strcmp(node->type, "MOD") == 0 || strcmp(node->type, "MOD_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -266,7 +244,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Relational Operations */
+    // Menor que (a < b)
     if (strcmp(node->type, "LT") == 0 || strcmp(node->type, "LT_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -286,6 +264,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Maior que (a > b)
     if (strcmp(node->type, "GT") == 0 || strcmp(node->type, "GT_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -305,6 +284,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Menor ou igual (a <= b)
     if (strcmp(node->type, "LE") == 0 || strcmp(node->type, "LE_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -324,6 +304,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Maior ou igual (a >= b)
     if (strcmp(node->type, "GE") == 0 || strcmp(node->type, "GE_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -343,6 +324,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Igual (a == b ou a = b)
     if (strcmp(node->type, "EQ") == 0 || strcmp(node->type, "EQ_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -362,6 +344,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Diferente (a != b ou a <> b)
     if (strcmp(node->type, "NE") == 0 || strcmp(node->type, "NE_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -381,7 +364,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Logical Operations */
+    // Operador AND lógico
     if (strcmp(node->type, "AND") == 0 || strcmp(node->type, "AND_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -401,6 +384,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Operador OR lógico
     if (strcmp(node->type, "OR") == 0 || strcmp(node->type, "OR_OP") == 0) {
         if (node->child_count >= 2) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -420,6 +404,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
+    // Operador NOT lógico
     if (strcmp(node->type, "NOT") == 0 || strcmp(node->type, "NOT_OP") == 0) {
         if (node->child_count >= 1) {
             char *arg1 = generateCodeForNode(node->children[0], code, symtab, errtab);
@@ -436,48 +421,66 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Control Flow: If Statement */
+    // Comando IF (if condição then ... else ...)
     if (strcmp(node->type, "IF") == 0 || strcmp(node->type, "IF_STMT") == 0) {
         if (node->child_count >= 2) {
             ASTNode *condition = node->children[0];
             ASTNode *then_block = node->children[1];
             ASTNode *else_block = (node->child_count >= 3) ? node->children[2] : NULL;
 
-            char *else_label = generateLabel();
-            char *end_label = generateLabel();
-
-            /* Evaluate condition */
+            // Avalia a condição
             char *cond_var = generateCodeForNode(condition, code, symtab, errtab);
-
-            /* Condition and jump */
             const char *cond = cond_var ? cond_var : "0";
-            addTACInstruction(code, TAC_JUMP_IF_FALSE, else_label, cond, NULL, condition->line);
-            
-            if (cond_var) free(cond_var);
 
-            /* Then block */
-            char *then_result = generateCodeForNode(then_block, code, symtab, errtab);
-            if (then_result) free(then_result);
-            
-            addTACInstruction(code, TAC_JUMP, end_label, NULL, NULL, node->line);
-
-            /* Else label and block */
-            addTACInstruction(code, TAC_LABEL, else_label, NULL, NULL, node->line);
             if (else_block) {
+                // IF com ELSE - precisa de 2 labels
+                char *else_label = generateLabel();
+                char *end_label = generateLabel();
+                
+                // Se condição for falsa, pula pro else
+                addTACInstruction(code, TAC_JUMP_IF_FALSE, else_label, cond, NULL, condition->line);
+                if (cond_var) free(cond_var);
+                
+                // Bloco then
+                char *then_result = generateCodeForNode(then_block, code, symtab, errtab);
+                if (then_result) free(then_result);
+                
+                // Pula pro fim (evita executar o else)
+                addTACInstruction(code, TAC_JUMP, end_label, NULL, NULL, node->line);
+                
+                // Label do else
+                addTACInstruction(code, TAC_LABEL, else_label, NULL, NULL, node->line);
                 char *else_result = generateCodeForNode(else_block, code, symtab, errtab);
                 if (else_result) free(else_result);
+                
+                // Label do fim
+                addTACInstruction(code, TAC_LABEL, end_label, NULL, NULL, node->line);
+                
+                free(else_label);
+                free(end_label);
+                
+            } else {
+                // IF sem ELSE - precisa de só 1 label
+                char *end_label = generateLabel();
+                
+                // Se condição for falsa, pula pro fim
+                addTACInstruction(code, TAC_JUMP_IF_FALSE, end_label, cond, NULL, condition->line);
+                if (cond_var) free(cond_var);
+                
+                // Bloco then
+                char *then_result = generateCodeForNode(then_block, code, symtab, errtab);
+                if (then_result) free(then_result);
+                
+                // Label do fim
+                addTACInstruction(code, TAC_LABEL, end_label, NULL, NULL, node->line);
+                
+                free(end_label);
             }
-
-            /* End label */
-            addTACInstruction(code, TAC_LABEL, end_label, NULL, NULL, node->line);
-
-            free(else_label);
-            free(end_label);
         }
         return NULL;
     }
 
-    /* Control Flow: While Loop */
+    // Loop WHILE (while condição do ...)
     if (strcmp(node->type, "WHILE") == 0 || strcmp(node->type, "WHILE_STMT") == 0) {
         if (node->child_count >= 2) {
             ASTNode *condition = node->children[0];
@@ -486,26 +489,26 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
             char *loop_label = generateLabel();
             char *end_label = generateLabel();
 
-            /* Loop label */
+            // Label do início do loop
             addTACInstruction(code, TAC_LABEL, loop_label, NULL, NULL, node->line);
 
-            /* Evaluate condition */
+            // Avalia a condição
             char *cond_var = generateCodeForNode(condition, code, symtab, errtab);
 
-            /* Condition and jump */
+            // Se condição for falsa, sai do loop
             const char *cond = cond_var ? cond_var : "0";
             addTACInstruction(code, TAC_JUMP_IF_FALSE, end_label, cond, NULL, condition->line);
             
             if (cond_var) free(cond_var);
 
-            /* Loop body */
+            // Corpo do loop
             char *body_result = generateCodeForNode(body, code, symtab, errtab);
             if (body_result) free(body_result);
 
-            /* Jump back to condition */
+            // Volta pro início do loop
             addTACInstruction(code, TAC_JUMP, loop_label, NULL, NULL, node->line);
 
-            /* End label */
+            // Label do fim do loop
             addTACInstruction(code, TAC_LABEL, end_label, NULL, NULL, node->line);
 
             free(loop_label);
@@ -514,7 +517,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Read Statement */
+    // Comando READ (leitura de variável)
     if (strcmp(node->type, "READ") == 0 || strcmp(node->type, "READ_STMT") == 0) {
         for (int i = 0; i < node->child_count; i++) {
             if (node->children[i]->type && strcmp(node->children[i]->type, "ARGUMENT") == 0) {
@@ -525,7 +528,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Write Statement */
+    // Comando WRITE (impressão de variável)
     if (strcmp(node->type, "WRITE") == 0 || strcmp(node->type, "WRITE_STMT") == 0) {
         for (int i = 0; i < node->child_count; i++) {
             if (node->children[i]->type && strcmp(node->children[i]->type, "ARGUMENT") == 0) {
@@ -536,32 +539,47 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Function/Procedure Definition */
+    // Declaração de função/procedimento
     if (strcmp(node->type, "FUNCTION") == 0 || strcmp(node->type, "PROCEDURE") == 0 ||
-    strcmp(node->type, "FUNC_DECL") == 0 || strcmp(node->type, "PROC_DECL") == 0) {
-    
-    /* Get function/procedure name from first IDENTIFIER child */
-    const char *func_name = "unknown_function";
-    if (node->child_count > 0 && 
-        node->children[0] && 
-        node->children[0]->type &&
-        strcmp(node->children[0]->type, "IDENTIFIER") == 0) {
-        func_name = node->children[0]->value ? node->children[0]->value : "unknown_function";
-    }
-    
-    addTACInstruction(code, TAC_FUNCTION_START, func_name, NULL, NULL, node->line);
+        strcmp(node->type, "FUNC_DECL") == 0 || strcmp(node->type, "PROC_DECL") == 0) {
+        
+        const char *func_name = "unknown_function";
+        ASTNode *body = NULL;
+        
+        // Procura o nome e o corpo do procedimento nos filhos
+        for (int i = 0; i < node->child_count; i++) {
+            if (node->children[i] && node->children[i]->type) {
+                // Acha o identificador (nome)
+                if (strcmp(node->children[i]->type, "IDENTIFIER") == 0) {
+                    func_name = node->children[i]->value ? node->children[i]->value : "unknown_function";
+                }
+                // Acha o corpo (pode ter vários nomes diferentes)
+                else if (strcmp(node->children[i]->type, "BLOCK") == 0 ||
+                        strcmp(node->children[i]->type, "COMPOUND") == 0 ||
+                        strcmp(node->children[i]->type, "BEGIN") == 0 ||
+                        strcmp(node->children[i]->type, "STATEMENT_LIST") == 0) {
+                    body = node->children[i];
+                }
+            }
+        }
+        
+        // Marca início do procedimento
+        addTACInstruction(code, TAC_FUNCTION_START, func_name, NULL, NULL, node->line);
 
-    /* Process function body (children after name) */
-    for (int i = 1; i < node->child_count; i++) {
-        char *result = generateCodeForNode(node->children[i], code, symtab, errtab);
-        if (result) free(result);
+        // Processa o corpo
+        if (body) {
+            char *result = generateCodeForNode(body, code, symtab, errtab);
+            if (result) free(result);
+        }
+        
+        // Adiciona return e marca fim do procedimento
+        addTACInstruction(code, TAC_RETURN, NULL, NULL, NULL, node->line);
+        addTACInstruction(code, TAC_FUNCTION_END, func_name, NULL, NULL, node->line);
+        
+        return NULL;
     }
 
-    addTACInstruction(code, TAC_FUNCTION_END, func_name, NULL, NULL, node->line);
-    return NULL;
-    }
-
-    /* Return Statement */
+    // Comando RETURN
     if (strcmp(node->type, "RETURN") == 0 || strcmp(node->type, "RETURN_STMT") == 0) {
         const char *return_val = NULL;
         if (node->child_count >= 1) {
@@ -576,7 +594,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Function Call */
+    // Chamada de função
     if (strcmp(node->type, "CALL") == 0 || strcmp(node->type, "FUNCTION_CALL") == 0) {
         const char *func_name = node->value ? node->value : "unknown_function";
         char *result = generateTempVar();
@@ -584,7 +602,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return result;
     }
 
-    /* Identifier or Literal */
+    // Identificador ou literal - só retorna o valor
     if (strcmp(node->type, "IDENTIFIER") == 0 || strcmp(node->type, "ID") == 0 ||
         strcmp(node->type, "VALUE") == 0 || strcmp(node->type, "NUMBER") == 0 ||
         strcmp(node->type, "LITERAL") == 0) {
@@ -594,7 +612,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Block/Compound Statement - process all children */
+    // Bloco de código - processa todos os filhos
     if (strcmp(node->type, "BLOCK") == 0 || strcmp(node->type, "COMPOUND") == 0 ||
         strcmp(node->type, "PROGRAM") == 0 || strcmp(node->type, "STATEMENT_LIST") == 0) {
         for (int i = 0; i < node->child_count; i++) {
@@ -604,7 +622,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
         return NULL;
     }
 
-    /* Generic recursion for unhandled nodes */
+    // Caso genérico - processa filhos recursivamente
     for (int i = 0; i < node->child_count; i++) {
         char *result = generateCodeForNode(node->children[i], code, symtab, errtab);
         if (result) free(result);
@@ -613,13 +631,7 @@ static char* generateCodeForNode(ASTNode *node, IntermediateCode *code,
     return NULL;
 }
 
-/**
- * @brief Generate intermediate code from AST
- * @param ast Abstract Syntax Tree
- * @param symtab Symbol table
- * @param errtab Error table
- * @return Pointer to generated intermediate code
- */
+// Função principal - gera todo o código intermediário a partir da AST
 IntermediateCode* generateIntermediateCode(ASTNode *ast, SymbolTable **symtab, ErrorTable *errtab) {
     IntermediateCode *code = createIntermediateCode();
     
@@ -631,20 +643,17 @@ IntermediateCode* generateIntermediateCode(ASTNode *ast, SymbolTable **symtab, E
         return code;
     }
 
-    /* Reset global counters */
+    // Reseta os contadores globais
     global_temp_counter = 0;
     global_label_counter = 0;
 
-    /* Generate TAC for the entire AST */
+    // Gera TAC pra AST inteira
     generateCodeForNode(ast, code, symtab, errtab);
 
     return code;
 }
 
-/**
- * @brief Print intermediate code to stdout
- * @param code Intermediate code to print
- */
+// Imprime o código intermediário em formato de tabela
 void printIntermediateCode(IntermediateCode *code) {
     if (!code || code->instruction_count == 0) {
         printf("Nenhuma instrução de código intermediário gerada.\n");
@@ -674,12 +683,7 @@ void printIntermediateCode(IntermediateCode *code) {
     printf("\n");
 }
 
-/**
- * @brief Write intermediate code to file
- * @param code Intermediate code
- * @param filepath Path to output file
- * @return 0 on success, -1 on failure
- */
+// Salva o código intermediário em arquivo (formato tabela)
 int writeIntermediateCodeToFile(IntermediateCode *code, const char *filepath) {
     if (!code || !filepath) {
         return -1;
@@ -694,12 +698,12 @@ int writeIntermediateCodeToFile(IntermediateCode *code, const char *filepath) {
         return -1;
     }
 
-    /* Write header */
+    // Cabeçalho da tabela
     fprintf(file, "%-8s | %-20s | %-20s | %-20s | %-20s | %-6s\n",
             "INDICE", "OPERACAO", "RESULTADO", "ARG1", "ARG2", "LINHA");
     fprintf(file, "----------------------------------------------------------------------------------------------------------\n");
 
-    /* Write instructions or message if empty */
+    // Escreve as instruções
     if (code->instruction_count == 0) {
         fprintf(file, "Nenhuma instrução de código intermediário gerada.\n");
     } else {
@@ -723,10 +727,8 @@ int writeIntermediateCodeToFile(IntermediateCode *code, const char *filepath) {
     closeFile(file);
     return 0;
 }
-/**
- * @brief Print intermediate code in sequential format (non-tabular)
- * @param code Intermediate code to print
- */
+
+// Imprime o código intermediário em formato sequencial (tipo assembly)
 void printIntermediateCodeSequential(IntermediateCode *code) {
     if (!code || code->instruction_count == 0) {
         printf("No intermediate code generated.\n");
@@ -738,6 +740,7 @@ void printIntermediateCodeSequential(IntermediateCode *code) {
     for (int i = 0; i < code->instruction_count; i++) {
         TACInstruction *instr = &code->instructions[i];
         
+        // Imprime cada tipo de instrução no formato apropriado
         switch (instr->op) {
             case TAC_ASSIGN:
                 printf("    %s = %s\n", instr->result, instr->arg1);
@@ -867,12 +870,7 @@ void printIntermediateCodeSequential(IntermediateCode *code) {
     printf("\n=== END INTERMEDIATE CODE ===\n\n");
 }
 
-/**
- * @brief Write intermediate code to file in sequential format
- * @param code Intermediate code
- * @param filepath Path to output file
- * @return 0 on success, -1 on failure
- */
+// Salva o código intermediário em arquivo (formato sequencial)
 int writeIntermediateCodeSequential(IntermediateCode *code, const char *filepath) {
     if (!code || !filepath) {
         return -1;
@@ -895,6 +893,7 @@ int writeIntermediateCodeSequential(IntermediateCode *code, const char *filepath
         for (int i = 0; i < code->instruction_count; i++) {
             TACInstruction *instr = &code->instructions[i];
             
+            // Mesma lógica do print, mas escrevendo no arquivo
             switch (instr->op) {
                 case TAC_ASSIGN:
                     fprintf(file, "    %s = %s\n", instr->result, instr->arg1);
@@ -1028,14 +1027,12 @@ int writeIntermediateCodeSequential(IntermediateCode *code, const char *filepath
     return 0;
 }
 
-/**
- * @brief Free intermediate code structure
- * @param code Intermediate code to free
- */
+// Libera toda a memória usada pelo código intermediário
 void freeIntermediateCode(IntermediateCode *code) {
     if (!code) return;
 
     if (code->instructions) {
+        // Libera cada string de cada instrução
         for (int i = 0; i < code->instruction_count; i++) {
             if (code->instructions[i].result) {
                 free(code->instructions[i].result);

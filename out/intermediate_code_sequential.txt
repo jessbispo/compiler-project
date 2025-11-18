@@ -2,14 +2,13 @@
 
 
 PROC_START proc
+    return
 PROC_END proc
     a = 1
     t0 = a < 1
     if_false t0 goto L0
     a = 12
-    goto L1
 L0:
-L1:
     a = 2
     b = 10
     c = 11
@@ -19,27 +18,23 @@ L1:
     e = false
     f = true
     write b
-    if_false d goto L2
+    if_false d goto L1
     a = 20
     t2 = 10 * c
     b = t2
     t3 = a div b
     c = t3
-    goto L3
+L1:
 L2:
-L3:
-L4:
     t4 = a > 1
-    if_false t4 goto L5
+    if_false t4 goto L3
     t5 = b > 10
-    if_false t5 goto L6
+    if_false t5 goto L4
     b = 2
-    goto L7
-L6:
-L7:
+L4:
     t6 = a - 1
     a = t6
-    goto L4
-L5:
+    goto L2
+L3:
 
 === END INTERMEDIATE CODE ===
