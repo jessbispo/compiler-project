@@ -2,7 +2,7 @@
  *  @authors Jessica Bispo (10410798), Vitor Alves Pereira (10410862) 
  *  @brief Função Central do Projeto de Compilador em MiniPascal em C
  *  @details Recebe um arquivo de entrada assim que o arquivo foi compilado e executado, ou solicita o caminho do arquivo ao usuário.
- *  @details Utiliza o comando gcc -Wall -Wno-unused-result -g -Og {...} -o compiler para compilar o código.
+ *  @details Utiliza o comando gcc -Wall -Wno-unused-result -g -Og src/main.c -o compiler para compilar o código.
  *  @implements Análise Léxica, Análise Sintática, Análise Semântica e Geração de Código Intermediário.
  */
 
