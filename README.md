@@ -175,21 +175,22 @@ Resultado salvo em:
 
 # 4. Como Compilar
 
-Você pode usar diretamente o GCC, mas por ser um processo que exige compilar mais de um arquivo .c, indicamos utilizar o Makefile com o comando:
+Para compilar, utilize o seguinte comando na raiz do projeto:
 
-    make
-
-
-O Makefile cuida de:
-- compilar sem warnings  
-- organizar os `.o` em `build/`  
-- gerar o binário final em `bin/`  
-
----
+```
+gcc -Wall -Wno-unused-result -g -Og src/main.c -o compiler
+```
 
 # 5. Como Executar
 
-Após compilar, estando na raiz do projeto:
+Para executar, utilize um dos seguintes comandos:
 
-    ./bin/compiler samples/valid/minipascal-code-accepted.txt
+### Executar com o caminho do arquivo (arquivo de exemplo):
+```
+./compiler samples/minipascal-code-accepted.txt
+```
 
+### Executar sem o caminho do arquivo
+```
+./compiler
+```
